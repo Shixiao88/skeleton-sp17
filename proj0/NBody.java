@@ -55,9 +55,7 @@ public class NBody {
                 xForce[index] = x_netf;
                 yForce[index] = y_netf;
                 p.update(dt, x_netf, y_netf);
-
                 p.draw();
-
             }
             StdDraw.show(10);
         }

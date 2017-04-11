@@ -29,7 +29,6 @@ public class OperationSequence {
         for (int i = 0; i < opSequence.size(); i += 1) {
             sb.append(opSequence.get(i) + "\n");
         }
-
         return sb.toString();
     }
 
