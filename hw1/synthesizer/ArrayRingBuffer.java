@@ -34,14 +34,14 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
      * throw new RuntimeException("Ring buffer overflow"). Exceptions
      * covered Monday.
      */
+    @Override
     public void enqueue(T x) {
         // TODO: Enqueue the item. Don't forget to increase fillCount and update last.
         if (isFull()) {
             throw new RuntimeException("Ring Buffer Overflow");
         }
         rb[last] = x;
-        last += 1;
-        if (last == capacity) {last = 0;}
+        last = getNext(last);
         this.fillCount += 1;
     }
 
@@ -50,14 +50,15 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
      * throw new RuntimeException("Ring buffer underflow"). Exceptions
      * covered Monday.
      */
+    @Override
     public T dequeue() {
         // TODO: Dequeue the first item. Don't forget to decrease fillCount and update
         if (isEmpty()) {
             throw new RuntimeException("Ring buffer underflow");
         }
         T removed = rb[first];
-        first += 1;
-        if (first == capacity) {first = 0;}
+        rb[first] = null;
+        first = getNext(first);
         this.fillCount -= 1;
         return removed;
     }
@@ -65,9 +66,32 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
     /**
      * Return oldest item, but don't remove it.
      */
+    @Override
     public T peek() {
         // TODO: Return the first item. None of your instance variables should change.
         return rb[first];
+    }
+
+    /* helper function to get the next index with a given index */
+    private int getNext(int index) {
+        if (index < capacity-1) {
+            return index+1;
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean isIn(T x) {
+        if (isEmpty()) {return false;}
+        for (int _ = 0; _ <= this.capacity; _ += 1) {
+            int first_copy = first;
+
+            if (rb[first_copy].equals(x)) {
+                return true;
+            }
+            first_copy = getNext(first_copy);
+        }
+        return false;
     }
 
     // TODO: When you get to part 5, implement the needed code to support iteration.
