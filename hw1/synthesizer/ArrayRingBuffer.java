@@ -95,4 +95,29 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
     }
 
     // TODO: When you get to part 5, implement the needed code to support iteration.
+
+    @Override
+    public Iterator<T> iterator(){
+        return new ListIterator();
+    }
+
+    public class ListIterator implements Iterator<T>{
+        private int pos;
+        private int iterated;
+
+        public ListIterator() {
+            pos = first;
+            iterated = 0;
+        }
+        public boolean hasNext() {
+            return iterated < fillCount;
+        }
+
+        public T next() {
+            T val = rb[pos];
+            pos = getNext(pos);
+            iterated += 1;
+            return val;
+        }
+    }
 }

@@ -42,6 +42,17 @@ public class TestArrayRingBuffer {
         assertFalse(arb.isIn(2));
     }
 
+    @Test
+    public void testIterator() {
+        ArrayRingBuffer<String> arb = new ArrayRingBuffer<>(3);
+        arb.enqueue("hello");
+        arb.enqueue("world");
+        arb.enqueue("!!");
+        for (String x : arb) {
+            System.out.println(x);
+        }
+    }
+
     /** Calls tests for ArrayRingBuffer. */
     public static void main(String[] args) {
         jh61b.junit.textui.runClasses(TestArrayRingBuffer.class);
