@@ -1,0 +1,48 @@
+
+data structur of table:
+map<String, ArrayList>
+
+{ "Column name": aLsit}
+
+example :
+        a table
+
+X int	Y int	Z int	W int
+1	    7	    2	    10
+7	    7	    4	    1
+1	    9	    9	    1
+
+shoud represented as
+matrix
+
+a table will has:
+- columns name is a string set, table.column()
+- table body is a matrix
+
+##the map and list idea is horrible, to many iterations.
+
+method column():
+return a String list contains the columns names
+
+method body():
+return a double list, Type[][]
+
+keep a int[] contains the same column names
+for k1_index in t1.column()
+    for k2_index in t2.column()
+    if t1.column[k1_index] == t2.column[k2_index]:
+        add [k1, k2] in common list, because i will rely on the index to locate element in matrix.
+        i = 0
+        while k1.body[i][k1] is not null:
+            j = 0
+            while k2.body[j][k2] is not null:
+                if k1.body[i][k1] equals k2.body[
+
+create object t3
+
+create column of t3:
+  - create empty list
+  - for i in common list
+  - append list t1[i]
+
+

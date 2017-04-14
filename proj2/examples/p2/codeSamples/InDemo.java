@@ -1,4 +1,4 @@
-package p2.codeSamples;
+package examples.p2.codeSamples;
 import edu.princeton.cs.introcs.In;
 
 public class InDemo {
