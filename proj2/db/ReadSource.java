@@ -9,12 +9,11 @@ import java.util.ArrayList;
 public class ReadSource {
 
     /* read the source file of a table and return a string*/
-    static ArrayList<String> readSource(String source) {
-        In in = new In();
+    static ArrayList<String> readSource(In in) {
         ArrayList<String> res = new ArrayList<>();
         String title = in.readLine();
         res.add(title);
-        while (!in.hasNextLine()) {
+        while (!in.isEmpty()) {
             res.add(in.readLine());
         }
         return res;

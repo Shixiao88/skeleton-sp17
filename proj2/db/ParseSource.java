@@ -1,5 +1,6 @@
 package db;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -7,12 +8,78 @@ import java.util.ArrayList;
  */
 public class ParseSource {
 
+    private String title_container;
+    private String body_container;
+    private ArrayList<String> title;
+    private ArrayList<ArrayList<String>> body;
+    private ArrayList<String> s;
+
+    public ParseSource(ArrayList<String> al) {
+        title_container = "";
+        body_container = "";
+        title = new ArrayList<>();
+        body = new ArrayList<>();
+        s = (ArrayList<String>)al.clone();
+    }
     /* receive a list of long strings and return
      * map as table title */
-    static ArrayList<String> parseSourceTitle(ArrayList<String> s) {
+    ArrayList<String> parseSourceTitle() {
         try {
             String title_s = s.get(0);
-            
+            s.remove(0);
+            for (int i=0; i<title_s.length(); i+=1) {
+                Character c = title_s.charAt(i);
+                if (c == ',') {
+                    clearTitleBuffer();
+                    continue;
+                }
+                titleBuffer(c);
+            } clearTitleBuffer();
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("the table is empty! error index of the title");
         }
+        return title;
+    }
+
+    ArrayList<ArrayList<String>> parseSourceBody() {
+        try {
+            for (int line_i=0; line_i<s.size(); line_i+=1) {
+                String line = s.get(line_i);
+                for (int i=0; i<line.length(); i+=1) {
+                    Character c = line.charAt(i);
+                    if (c == ',') {
+                        clearBodyBuffer(line_i);
+                        continue;
+                    }
+                    bodyBuffer(c);
+                }
+                clearBodyBuffer(line_i);
+            }
+        // there is NAN and no value exception that i need to complete later.
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println ("error index of the body");
+        }
+        return body;
+    }
+
+    void titleBuffer(Character word) {
+        title_container += word;
+    }
+
+    void clearTitleBuffer() {
+        title.add(title_container);
+        title_container = "";
+    }
+
+    void bodyBuffer(Character word) {
+        body_container += word;
+    }
+
+    void clearBodyBuffer(int index) {
+        if (index == body.size()) {
+            body.add(new ArrayList<String>());
+        }
+            body.get(index).add(body_container);
+        body_container = "";
     }
 }
