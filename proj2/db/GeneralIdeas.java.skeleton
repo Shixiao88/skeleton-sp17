@@ -1,48 +1,138 @@
 
-data structur of table:
+data structure of table:
 map<String, ArrayList>
 
-{ "Column name": aLsit}
+columns: map -> { "Column name": Column index}
+body: matrix -> <sometype>[][]
 
+when
 example :
-        a table
-
+        table A
 X int	Y int	Z int	W int
 1	    7	    2	    10
 7	    7	    4	    1
 1	    9	    9	    1
 
-shoud represented as
-matrix
-
-a table will has:
-- columns name is a string set, table.column()
-- table body is a matrix
-
-##the map and list idea is horrible, to many iterations.
-
-method column():
-return a String list contains the columns names
-
-method body():
-return a double list, Type[][]
-
-keep a int[] contains the same column names
-for k1_index in t1.column()
-    for k2_index in t2.column()
-    if t1.column[k1_index] == t2.column[k2_index]:
-        add [k1, k2] in common list, because i will rely on the index to locate element in matrix.
-        i = 0
-        while k1.body[i][k1] is not null:
-            j = 0
-            while k2.body[j][k2] is not null:
-                if k1.body[i][k1] equals k2.body[
-
-create object t3
-
-create column of t3:
-  - create empty list
-  - for i in common list
-  - append list t1[i]
+columns: { X : 0,
+           Y : 1,
+           Z : 2,
+           W : 3 }
+body:
+[[1, 7, 2, 10],
+ [7, 7, 4, 1],
+ [1, 9, 9, 1]
+]
 
 
+        table B
+W int	B int	Z int
+1	    7	    4
+7	    7	    3
+1	    9	    6
+1	    11	    9
+
+columns: { W : 0,
+           B : 1,
+           Z : 2 }
+body:
+[[1, 7, 4],
+ [7, 7, 3],
+ [1, 9, 9],
+ [1, 11, 9]
+]
+
+attribute: name, title, body
+method: titleIndex, titleIn, titleAdd, bodyDel, bodyAdd
+
+- titleIndex
+parameter: obj table, column name
+return: corresponding index
+
+- titleIn
+parameter: obj talbe, column name
+return: true or false
+
+- titleAdd
+parameter: obj table, column name
+if has name, no change, if no, add name to the last with correct index
+return: void
+
+- bodyDel
+parameter: obj table, column name
+delete the whole column with corresponding column name
+return void
+
+- bodyAdd
+parameter: obj talbe, column name
+add
+
+@ Class Join:
+go through keys in table A, if one key in table A also in table B,
+put it in other column table C
+
+@ Method mixColumn(columnA, columnB):
+for key_a in talbeA.column.keys(),
+    if key_b in tableB.column.keys()
+        if key_a == key_b
+            tableC.column.put(key_a, map.length())
+return columnC_common
+
+
+in this example
+columns (c): {Z : 0, W : 1}
+in another function, pass in columns C, iterate through keys (Z, W), get the column_index_A by table A.get()method,
+iterate through matrix A[0][column_indexA] to A[length][column_indexA] and matrix B[0][column_indexB] to B[length]
+[column_indexB] if one element is in both, pass out the list of the row_index (list)
+
+@ Method filterBody
+two method cross iterate
+
+find_index(keys, matrix1, matrix2):
+    find the first key, del the rows that are not the same.
+    if the parameter list is only one element:
+        return m1, m2
+    elif the parameter list is larger than one:
+        do find_rest_index(m1, m2)
+
+find_rest_index(keys, mat1, mat2):
+    find_index(keys, mat1, mat2)
+
+now we have the filtered matrix of copy table 1, and table 2,
+table 1 matrix:                table 2 matrix:
+ [[7, 7, 4, 1],                 [[1, 7, 4],
+  [1, 9, 9, 1]]                  [1, 9, 9]]
+
+@ Method fillMatrix(key, table_obj, table_target)
+for len of matrix_obj:
+    matrixC[len][table_target.column.get(key)] = matrix1[len][table_obj.column.get(key)]
+
+@ Method fillCommonMatrx()
+for key in tableC.column.keys()
+    fillMatrix(key, table1, tableC)
+
+tableC matrix:
+ [[4, 1],
+  [9, 1]]
+
+
+we add the other keys to the column C, use new mothed completeComun
+@ Method completeColumn_Matrix(columnA, columnB, columnC)
+for key in columnA :
+    if key not in column C
+        columnC put(key, mapC.length())
+        complete_Matrix(key, table1, tableC)
+for key in columnB :
+    same
+    complete_Matrix(key, table2, tableC)
+
+
+
+general idea is:
+get common keys from keyA and keyB,
+use common keys and copy of bodyA, body B, filter copy bodyA, B
+add matrix C using common keys
+complete key
+while complete key, complete matrx C at the same time (do not need to iterate twice)
+
+
+so keys and body of C will be general within this class
