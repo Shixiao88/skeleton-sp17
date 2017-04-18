@@ -12,7 +12,7 @@ public class TestParseSource {
 
     @Test
     public void checkReadSource() {
-        In in = new In("examples/test.tbl");
+        In in = new In("test/test.tbl");
         ArrayList<String> s = ReadSource.readSource(in);
         assertEquals(13, s.size());
         System.out.println(s);
@@ -41,6 +41,16 @@ public class TestParseSource {
         ArrayList<ArrayList<String>> body1 = obj1.parseSourceBody();
         System.out.println(body1);
         assertEquals(0, body1.size());
-        assertEquals(0, body1.get(0).size());
+
+        In in2 = new In("test/test2.tbl");
+
+        ArrayList<String> s2 = ReadSource.readSource(in2);
+        ParseSource obj2 = new ParseSource(s2);
+        ArrayList<String> title2 = obj2.parseSourceTitle();
+        System.out.println(title2);
+        assertEquals(0, title2.size());
+        ArrayList<ArrayList<String>> body2 = obj2.parseSourceBody();
+        System.out.println(body2);
+        assertEquals(0, body2.size());
     }
 }

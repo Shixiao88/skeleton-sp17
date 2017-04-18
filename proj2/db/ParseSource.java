@@ -18,7 +18,7 @@ public class ParseSource {
         title_container = "";
         body_container = "";
         title = new ArrayList<>();
-        body = new ArrayList<>();
+        body = new ArrayList<ArrayList<String>>();
         s = (ArrayList<String>)al.clone();
     }
     /* receive a list of long strings and return
@@ -32,11 +32,14 @@ public class ParseSource {
                 if (c == ',') {
                     clearTitleBuffer();
                     continue;
+                } else if(c == '\'' || c == '"') {
+                    continue;
                 }
                 titleBuffer(c);
             } clearTitleBuffer();
-        } catch (IndexOutOfBoundsException e) {
+        } catch (NullPointerException e) {
             System.out.println("the table is empty! error index of the title");
+            return new ArrayList<String>();
         }
         return title;
     }
@@ -50,14 +53,17 @@ public class ParseSource {
                     if (c == ',') {
                         clearBodyBuffer(line_i);
                         continue;
+                    } else if (c == '\'' || c == '"') {
+                        continue;
                     }
                     bodyBuffer(c);
                 }
                 clearBodyBuffer(line_i);
             }
         // there is NAN and no value exception that i need to complete later.
-        } catch (IndexOutOfBoundsException e) {
+        } catch (NullPointerException e) {
             System.out.println ("error index of the body");
+            return null;
         }
         return body;
     }
