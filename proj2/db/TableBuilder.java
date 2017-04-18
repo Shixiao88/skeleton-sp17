@@ -12,15 +12,14 @@ import java.util.*;
 public class TableBuilder {
 
     private String name;
-    private ArrayList<String> origin_title;
     private Map<String, Integer> title;
     private ArrayList<ArrayList<String>> body;
 
     TableBuilder(String name, ParseSource ps) {
         this.name = name;
-        this.origin_title = ps.parseSourceTitle();
+        ArrayList<String> origin_title = ps.parseSourceTitle();
         this.body = ps.parseSourceBody();
-        convertTitle(origin_title);
+        this.title = convertTitle(origin_title);
     }
 
     TableBuilder(String name, Map<String, Integer> title, ArrayList<ArrayList<String>> body) {
@@ -30,24 +29,27 @@ public class TableBuilder {
     }
 
     String gettaName() {
-        return name;
+        return this.name;
     }
 
     Map<String, Integer> gettaTitle() {
-        return title;
+        return this.title;
     }
 
     ArrayList<ArrayList<String>> gettaBody() {
-        return body;
+        return this.body;
     }
 
-    void convertTitle(ArrayList<String> origin_title) {
+    Map<String, Integer> convertTitle(ArrayList<String> origin_title) {
+        Map<String, Integer> temp_title = new HashMap<>();
         try {
             for (int index = 0; index < origin_title.size(); index += 1 ) {
-                title.put(origin_title.get(index), index);
+                temp_title.put(origin_title.get(index), index);
             }
+            return temp_title;
         } catch (NullPointerException e) {
             System.out.println ("there is no title");
+            return temp_title;
         }
     }
 }

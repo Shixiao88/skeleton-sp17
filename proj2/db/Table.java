@@ -11,13 +11,12 @@ public class Table {
     private String name;
     private TableBuilder tb;
     private Map<String, Integer> title;
-    public ArrayList<ArrayList<String>> body;
+    private ArrayList<ArrayList<String>> body;
 
-    Table(String name, ParseSource ps) {
-        tb = new TableBuilder(name, ps);
+    Table(TableBuilder tb) {
         this.title = tb.gettaTitle();
         this.body = tb.gettaBody();
-        this.name = name;
+        this.name = tb.gettaName();
     }
 
     Table(String name, Map<String, Integer> t, ArrayList<ArrayList<String>> b) {
@@ -30,9 +29,15 @@ public class Table {
         return this.name;
     }
 
+    Map<String, Integer> gettitle() {
+        return this.title;
+    }
+
+    ArrayList<ArrayList<String>> getbody() {
+        return this.body;
+    }
+
     int getColumnNum() {
-        System.out.println(title);
-        System.out.println(title.keySet());
         return title.keySet().size();
     }
 
@@ -55,8 +60,9 @@ public class Table {
     }
 
     /* helper method for columnAdd and columnDel.
+     * also helper method for Join class
      * if title already in title map, nothing change
-     * if no, append title in the last and add corresponding index, add a ampty column below the new title*/
+     * if no, append title in the last and add corresponding index, add an empty column below the new title*/
     private void titleAdd(String name){
         try {getTitleIndex(name);}
         catch (RuntimeException e) {
@@ -72,11 +78,13 @@ public class Table {
     *  - else do nothing */
     private void checkSize(ArrayList<String> to_check, int std) {
         if (to_check.size() < std) {
-            for (int i = 0; i < to_check.size() - std; i += 1) {
+            int to_check_size = to_check.size();
+            int discranpcy = std - to_check_size;
+            for (int i = 0; i < discranpcy; i += 1) {
                 to_check.add((String)null);
             }
         } else if (to_check.size() > std) {
-            throw new RuntimeException("the added element is too lone!");
+            throw new RuntimeException("the added element is too long!");
         }
     }
 
@@ -87,7 +95,7 @@ public class Table {
         checkSize(col, body.size());
         titleAdd(title_name);
         try {
-            int index = getTitleIndex(name);
+            int index = getTitleIndex(title_name);
             for (int i = 0; i < getRowNum(); i += 1) {
                 body.get(i).set(index,col.get(i));
             }
@@ -104,15 +112,27 @@ public class Table {
     *  if the column do not exist in titles, raise an error*/
     void columnDel(String title_name) {
         try {
-            int index = getTitleIndex(name);
+            int index = getTitleIndex(title_name);
             for (int i = 0; i < getRowNum(); i += 1) {
                 body.get(i).remove(index);
             }
-            title.remove(name);
+            titleDel(title_name);
         }
         catch (RuntimeException e) {
             throw new RuntimeException
                     ("Can not delete the title because does not exist in the table");
+        }
+    }
+
+    /* helper method for COLUMNDEL, if you delete one title, all the title after that should be shifted
+     *  it means that all titles has greater values should have value minus one*/
+    void titleDel(String title_name) {
+        int index = getTitleIndex(title_name);
+        title.remove(title_name);
+        for (String t : title.keySet()) {
+            if (title.get(t) > index) {
+                title.put(t, title.get(t) - 1);
+            }
         }
     }
 

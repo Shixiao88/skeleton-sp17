@@ -23,16 +23,19 @@ public class TestTableBuilder {
         assertEquals("Patriots", tb.gettaBody().get(11).get(0));
     }
 
+    @Test
     public void checkOnlyTitle() {
         ArrayList<String>rs1 = ReadSource.readSource(new In("test/test1.tbl"));
         ParseSource ps1 = new ParseSource(rs1);
         TableBuilder tb1 = new TableBuilder("test table2", ps1);
         assertEquals("test table2", tb1.gettaName());
+        System.out.println(tb1.gettaTitle());
         assertEquals((Integer)0, (Integer)tb1.gettaTitle().get("T str"));
         assertEquals((Integer)4, (Integer)tb1.gettaTitle().get("T int"));
         assertEquals(0, tb1.gettaBody().size());
     }
 
+    @Test
     public void checkEmptyTalbe() {
         ArrayList<String>rs2 = ReadSource.readSource(new In("test/test2.tbl"));
         ParseSource ps2 = new ParseSource(rs2);

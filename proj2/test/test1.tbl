@@ -1,1 +1,1 @@
-Teamname string,Season int,Wins int,Losses int,Ties int
+T str,S int,W int,L int,T int
