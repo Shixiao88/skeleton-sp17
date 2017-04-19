@@ -17,7 +17,7 @@ public class JoinHelper {
         // the set does not garantee the order
         Set<String> title_key1 = table1.gettitle().keySet();
         Set<String> title_key2 = table2.gettitle().keySet();
-        Map<String, Integer> title_common = new HashMap<>();
+        Map<String, Integer> title_common = new LinkedHashMap<>();
         int common_key_index = 0;
 
         for (String k1:title_key1) {
@@ -94,7 +94,7 @@ public class JoinHelper {
             ArrayList<String> col1 = t1.columnGet(k);
             ArrayList<String> col2 = t2.columnGet(k);
             for (int l = 0; l < l1.size(); l += 1) {
-                if (col1.get(l1.get(l)) != col2.get(l2.get(l))) {
+                if (! col1.get(l1.get(l)).equals(col2.get(l2.get(l)))) {
                     l1.remove(l);
                     l2.remove(l);
                 }
@@ -104,6 +104,88 @@ public class JoinHelper {
         return pair;
     }
 
+    /* helper method to return the list that filter out the common title, by order from table1 to table2*/
+    static Map<String, Integer> completeTitle(Map<String, Integer> common_title,
+                                              Map<String, Integer> title1,
+                                              Map<String, Integer> title2) {
+            Map<String, Integer> whole_keys = new LinkedHashMap<>();
+        int key_index = 0;
+        for (String common_k : common_title.keySet()) {
+            whole_keys.put(common_k, key_index);
+            key_index += 1;
+        }
+        for (String k1 : title1.keySet()) {
+            if (! common_title.containsKey(k1)) {
+                whole_keys.put(k1, key_index);
+                key_index += 1;
+            }
+        }
+        for (String k2 : title2.keySet()) {
+            if (! common_title.containsKey(k2)) {
+                whole_keys.put(k2, key_index);
+                key_index += 1;
+            }
+        }
+        return whole_keys;
+    }
 
+    /* helper method to return the not common key list */
+    static ArrayList<String> getNoCommonTitle (Map<String, Integer> common_title,
+                                               Map<String, Integer> title1,
+                                               Map<String, Integer> title2) {
+        ArrayList<String> no_common_keys = new ArrayList<>();
+        for (String k1 : title1.keySet()) {
+            if (!common_title.containsKey(k1)) {
+                no_common_keys.add(k1);
+            }
+        }
+        for (String k2 : title2.keySet()) {
+            if (!common_title.containsKey(k2)) {
+                no_common_keys.add(k2);
+            }
+        }
+        return no_common_keys;
+    }
+
+
+    static Table completeTable(String name, ArrayList<Integer> row_num_1, ArrayList<Integer> row_num_2,
+                               Map<String, Integer> common_title, Table t1, Table t2) {
+        Map<String, Integer> title1 = t1.gettitle();
+        Map<String, Integer> title2 = t2.gettitle();
+        Map<String, Integer> all_keys = completeTitle(common_title, t1.gettitle(), t2.gettitle());
+        ArrayList<ArrayList<String>> new_body = new ArrayList<>();
+        for (int row=0; row < row_num_1.size(); row +=1 ) {
+            ArrayList<String> line = new ArrayList<>();
+            for (String k : common_title.keySet()) {
+                Integer row_num = row_num_1.get(row);
+                String element = t1.getbody().get(row_num).get(t1.getTitleIndex(k));
+                line.add(element);
+            }
+            new_body.add(line);
+        }
+        Table res = new Table(name, all_keys, new_body);
+        // we finish the table with common titles
+
+        ArrayList<String> no_common_key = getNoCommonTitle(common_title, t1.gettitle(), t2.gettitle());
+        ArrayList<String> column = new ArrayList<>();
+        for (String nckey : no_common_key) {
+            try {
+                int col_num = t1.getTitleIndex(nckey);
+                for (int row = 0; row < row_num_1.size(); row += 1) {
+                    int row_num = row_num_1.get(row);
+                    String element = t1.getbody().get(row_num).get(col_num);
+                    column.add(element);
+                }
+            } catch (RuntimeException e) {
+                int col_num = t2.getTitleIndex(nckey);
+                for (int row = 0; row < row_num_2.size(); row += 1) {
+                    int row_num = row_num_1.get(row);
+                    String element = t2.getbody().get(row_num).get(col_num);
+                    column.add(element);
+            }
+        } res.columnAdd(nckey, column);
+    }
+    return res;
+    }
 
 }
