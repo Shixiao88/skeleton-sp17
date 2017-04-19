@@ -14,17 +14,18 @@ import java.util.*;
  */
 public class TestTable {
 
-    ArrayList<String> rs = ReadSource.readSource(new In("test/test.tbl"));
-    ParseSource ps = new ParseSource(rs);
-    TableBuilder tb = new TableBuilder("test table", ps);
-    Table table = new Table(tb);
-
+    Table table = new Table("test table", "test/test.tbl");
 
     @Test
     public void testConstructor() {
 
+        /* test constructor by calling the source path */
+
+        System.out.println(table.gettitle());
+        System.out.println(table.getbody());
+
         /* test method GETNAME()*/
-        assertEquals(tb.gettaName(), table.getname());
+        assertEquals("test table", table.getname());
 
         /* test method TITLEIN()*/
         assertTrue(table.titleIn("W int"));
@@ -35,6 +36,11 @@ public class TestTable {
 
         /* test method GETROWNUM() */
         assertEquals(12, table.getRowNum());
+
+        /* test method COLUMNGET() */
+        ArrayList<String> select_col = table.columnGet("T str");
+        assertEquals(12, select_col.size());
+        assertEquals("Golden Bears", select_col.get(0));
 
         /* test method COLUMNADD() */
         ArrayList<String> col = new ArrayList<>();
@@ -47,7 +53,7 @@ public class TestTable {
         table.columnAdd("New Col", col);
         assertEquals(6, table.getColumnNum());
 //      System.out.print(table.gettitle());
-        assertEquals((Integer)5, table.gettitle().get("New Col"));
+        assertEquals((Integer) 5, table.gettitle().get("New Col"));
         assertEquals("12", table.getbody().get(0).get(5));
         assertEquals(null, table.getbody().get(4).get(5));
 
@@ -76,7 +82,14 @@ public class TestTable {
         assertEquals("MNS2", table.getbody().get(0).get(0));
         assertEquals("2018", table.getbody().get(0).get(1));
         assertEquals(null, table.getbody().get(0).get(2));
+
+        /* test method ROWDEL() with row index */
+        Table table3 = new Table("test_table2", "test/test.tbl");
+        table3.rowDel(0);
+        assertEquals(11, table3.getRowNum());
+        assertEquals("2015", table3.getbody().get(0).get(1));
     }
+
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -105,5 +118,4 @@ public class TestTable {
         /* test when delete no existing column*/
         table.columnDel("something");
     }
-
 }

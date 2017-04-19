@@ -1,7 +1,5 @@
 package db;
 
-import sun.plugin.javascript.navig.Array;
-
 import java.util.*;
 
 /**
@@ -41,7 +39,7 @@ public class TableBuilder {
     }
 
     Map<String, Integer> convertTitle(ArrayList<String> origin_title) {
-        Map<String, Integer> temp_title = new HashMap<>();
+        Map<String, Integer> temp_title = new LinkedHashMap<>();
         try {
             for (int index = 0; index < origin_title.size(); index += 1 ) {
                 temp_title.put(origin_title.get(index), index);

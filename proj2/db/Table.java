@@ -1,5 +1,7 @@
 package db;
 
+import edu.princeton.cs.introcs.In;
+
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -13,10 +15,13 @@ public class Table {
     private Map<String, Integer> title;
     private ArrayList<ArrayList<String>> body;
 
-    Table(TableBuilder tb) {
+    Table(String name, String source) {
+        this.name = name;
+        ArrayList<String> rs = ReadSource.readSource(new In(source));
+        ParseSource ps = new ParseSource(rs);
+        TableBuilder tb = new TableBuilder("test table", ps);
         this.title = tb.gettaTitle();
         this.body = tb.gettaBody();
-        this.name = tb.gettaName();
     }
 
     Table(String name, Map<String, Integer> t, ArrayList<ArrayList<String>> b) {
@@ -88,6 +93,24 @@ public class Table {
         }
     }
 
+    /* return a column selected by its column title,
+    *  raise an error if the given title name is not in the table*/
+    ArrayList<String> columnGet (String title_name) {
+        try {
+            int index = getTitleIndex(title_name);
+            ArrayList<String> col = new ArrayList<>();
+            int rowNum = getRowNum();
+            for (int i = 0; i < rowNum; i += 1) {
+                col.add(body.get(i).get(index));
+            }
+            return col;
+        } catch (RuntimeException e) {
+            System.out.print("Must select a title from the table, not a title you made up.");
+            return null;
+        }
+    }
+
+
     /* add horizontal column to the body
     *  if the name exists in the title, replace the old one
     *  if the list's length is not equal to the body, leave the rest in blank */
@@ -151,8 +174,13 @@ public class Table {
 
     }
 
-    /* delete the last row??*/
-    void rowDel() {}
+    /* delete the row with selected row number*/
+    void rowDel(int row_index) {
+        try {
+            body.remove(row_index);
+        } catch (IndexOutOfBoundsException e) {}
+
+    }
 
     /* repr of the whole table*/
     void String() {}
