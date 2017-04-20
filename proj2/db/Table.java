@@ -34,9 +34,7 @@ public class Table {
         return this.name;
     }
 
-    Map<String, Integer> gettitle() {
-        return this.title;
-    }
+    Map<String, Integer> gettitle() { return this.title; }
 
     ArrayList<ArrayList<String>> getbody() {
         return this.body;
@@ -61,6 +59,33 @@ public class Table {
         }
         else {
             throw new RuntimeException("the given title is not in the table.");
+        }
+    }
+
+    /* return a column selected by its column title,
+*  raise an error if the given title name is not in the table*/
+    public ArrayList<String> columnGet (String title_name) {
+        try {
+            int index = getTitleIndex(title_name);
+            ArrayList<String> col = new ArrayList<>();
+            int rowNum = getRowNum();
+            for (int i = 0; i < rowNum; i += 1) {
+                col.add(body.get(i).get(index));
+            }
+            return col;
+        } catch (RuntimeException e) {
+            System.out.print("Must select a title from the table, not a title you made up.");
+            return null;
+        }
+    }
+
+    public ArrayList<String> rowGet (int row_index) {
+        try {
+            ArrayList<String> rtn_row = (ArrayList) body.get(row_index).clone();
+            return rtn_row;
+        } catch (RuntimeException e) {
+            System.out.print("Row number is larger thant he larges row number of the table");
+            return null;
         }
     }
 
@@ -93,24 +118,6 @@ public class Table {
         }
     }
 
-    /* return a column selected by its column title,
-    *  raise an error if the given title name is not in the table*/
-    ArrayList<String> columnGet (String title_name) {
-        try {
-            int index = getTitleIndex(title_name);
-            ArrayList<String> col = new ArrayList<>();
-            int rowNum = getRowNum();
-            for (int i = 0; i < rowNum; i += 1) {
-                col.add(body.get(i).get(index));
-            }
-            return col;
-        } catch (RuntimeException e) {
-            System.out.print("Must select a title from the table, not a title you made up.");
-            return null;
-        }
-    }
-
-
     /* add horizontal column to the body
     *  if the name exists in the title, replace the old one
     *  if the list's length is not equal to the body, leave the rest in blank */
@@ -131,6 +138,19 @@ public class Table {
         }
     }
 
+    /* helper method for COLUMNDEL, if you delete one title, all the title after that should be shifted
+ *  it means that all titles has greater values should have value minus one*/
+    private void titleDel(String title_name) {
+        int index = getTitleIndex(title_name);
+        title.remove(title_name);
+        for (String t : title.keySet()) {
+            if (title.get(t) > index) {
+                title.put(t, title.get(t) - 1);
+            }
+        }
+    }
+
+
     /* delete horizontal column according to the list
     *  if the column do not exist in titles, raise an error*/
     void columnDel(String title_name) {
@@ -144,18 +164,6 @@ public class Table {
         catch (RuntimeException e) {
             throw new RuntimeException
                     ("Can not delete the title because does not exist in the table");
-        }
-    }
-
-    /* helper method for COLUMNDEL, if you delete one title, all the title after that should be shifted
-     *  it means that all titles has greater values should have value minus one*/
-    void titleDel(String title_name) {
-        int index = getTitleIndex(title_name);
-        title.remove(title_name);
-        for (String t : title.keySet()) {
-            if (title.get(t) > index) {
-                title.put(t, title.get(t) - 1);
-            }
         }
     }
 
@@ -182,6 +190,32 @@ public class Table {
 
     }
 
+    public boolean isEmpty() {
+        return body.size() == 0;
+    }
+
+    public Table copy(String new_name) {
+
+        // create a copy of body
+        ArrayList<ArrayList<String>> copy_body  = new ArrayList<>();
+        for (int row=0; row < getRowNum(); row += 1){
+            ArrayList<String> line = new ArrayList<>();
+            line.addAll(rowGet(row));
+            copy_body.add(line);
+        }
+
+        // create a copy of title
+        Map<String, Integer> copy_title = new LinkedHashMap<>();
+        for (String k : title.keySet()) {
+            copy_title.put(k, title.get(k));
+        }
+
+        Table copy_table = new Table(new_name, copy_title, copy_body);
+        return copy_table;
+    }
+
     /* repr of the whole table*/
-    void String() {}
+    public String toString() {
+        return "";
+    }
 }

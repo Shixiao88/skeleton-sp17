@@ -42,6 +42,13 @@ public class TestTable {
         assertEquals(12, select_col.size());
         assertEquals("Golden Bears", select_col.get(0));
 
+        /* test method ROWGET() */
+        ArrayList<String> select_row  = table.rowGet(0);
+        assertEquals(5, select_row.size());
+        assertEquals("2016", select_row.get(1));
+        ArrayList<String> select_row1  = table.rowGet(110);
+        assertEquals(null, select_row1);
+
         /* test method COLUMNADD() */
         ArrayList<String> col = new ArrayList<>();
         col.add("12");
@@ -90,6 +97,16 @@ public class TestTable {
         assertEquals("2015", table3.getbody().get(0).get(1));
     }
 
+    @Test
+    public void TestCopy() {
+        Table target = new Table("target", "test/t1.tbl");
+        Table copy = target.copy("copy");
+        assertEquals(target.gettitle(), copy.gettitle());
+        assertEquals(target.getbody(), copy.getbody());
+        copy.rowDel(0);
+        assertNotEquals(target.getbody(), copy.getbody());
+        assertEquals(target.getRowNum()-1, copy.getRowNum());
+    }
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();

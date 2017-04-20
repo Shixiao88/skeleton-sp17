@@ -152,25 +152,25 @@ public class JoinHelper {
                                Map<String, Integer> common_title, Table t1, Table t2) {
         Map<String, Integer> title1 = t1.gettitle();
         Map<String, Integer> title2 = t2.gettitle();
-        Map<String, Integer> all_keys = completeTitle(common_title, t1.gettitle(), t2.gettitle());
+        Map<String, Integer> all_titles = completeTitle(common_title, t1.gettitle(), t2.gettitle());
         ArrayList<ArrayList<String>> new_body = new ArrayList<>();
         for (int row=0; row < row_num_1.size(); row +=1 ) {
             ArrayList<String> line = new ArrayList<>();
+            int row_num = row_num_1.get(row);
             for (String k : common_title.keySet()) {
-                Integer row_num = row_num_1.get(row);
-                String element = t1.getbody().get(row_num).get(t1.getTitleIndex(k));
+                int col_num = t1.getTitleIndex(k);
+                String element = t1.getbody().get(row_num).get(col_num);
                 line.add(element);
-            }
-            new_body.add(line);
+            } new_body.add(line);
         }
-        Table res = new Table(name, all_keys, new_body);
+        Table res = new Table(name, all_titles, new_body);
         // we finish the table with common titles
-
-        ArrayList<String> no_common_key = getNoCommonTitle(common_title, t1.gettitle(), t2.gettitle());
         ArrayList<String> column = new ArrayList<>();
-        for (String nckey : no_common_key) {
+        ArrayList<String> no_common_title_key = getNoCommonTitle(common_title, t1.gettitle(), t2.gettitle());
+        for (String nckey : no_common_title_key) {
             try {
                 int col_num = t1.getTitleIndex(nckey);
+
                 for (int row = 0; row < row_num_1.size(); row += 1) {
                     int row_num = row_num_1.get(row);
                     String element = t1.getbody().get(row_num).get(col_num);
@@ -179,13 +179,47 @@ public class JoinHelper {
             } catch (RuntimeException e) {
                 int col_num = t2.getTitleIndex(nckey);
                 for (int row = 0; row < row_num_2.size(); row += 1) {
-                    int row_num = row_num_1.get(row);
+                    int row_num = row_num_2.get(row);
                     String element = t2.getbody().get(row_num).get(col_num);
                     column.add(element);
             }
-        } res.columnAdd(nckey, column);
+        }   res.columnAdd(nckey, column);
+            column.clear();
     }
     return res;
     }
 
+
+    /* complete the table when there is no common title, a.k.a the common_title parameter is []
+     * create a new line to hold elements
+     * create a new body to hold the line
+
+     * iterate first table's row
+     *     iterate second table's row
+     *         iterate common title,
+     *             add each element in line
+     *      add line to the body
+     *      clear the line to hold new element
+     * finish the filling, and create the new table using title, and body parameter.
+
+     * */
+    static Table cartesianProductCompleteTable (String name, Map<String, Integer> common_title, Table t1, Table t2) {
+        Map<String, Integer> total_title = completeTitle(common_title, t1.gettitle(), t2.gettitle());
+        int row_num_size1 = t1.getRowNum();
+        int row_num_size2 = t2.getRowNum();
+        ArrayList<ArrayList<String>> new_body = new ArrayList<>();
+        Table res = new Table(name, total_title, new_body);
+        for (int row1 = 0; row1 < row_num_size1; row1 += 1) {
+            ArrayList<String> table1_line = t1.rowGet(row1);
+            for (int row2 = 0; row2 < row_num_size2; row2 += 1) {
+                ArrayList<String> table2_line = t2.rowGet(row2);
+                ArrayList<String> line = new ArrayList<>();
+                line.addAll(table1_line);
+                line.addAll(table2_line);
+                res.rowAdd(line);
+                System.out.println(line);
+            }
+        }
+        return res;
+    }
 }
