@@ -1,140 +1,64 @@
-
-data structure of table:
-map<String, ArrayList>
-
-columns: map -> { "Column name": Column index}
-body: matrix -> <sometype>[][]
-
-when
-example :
-        table A
-X int	Y int	Z int	W int
-1	    7	    2	    10
-7	    7	    4	    1
-1	    9	    9	    1
-
-columns: { X : 0,
-           Y : 1,
-           Z : 2,
-           W : 3 }
-body:
-[[1, 7, 2, 10],
- [7, 7, 4, 1],
- [1, 9, 9, 1]
-]
-
-        table B
-W int	B int	Z int
-1	    7	    4
-7	    7	    3
-1	    9	    6
-1	    11	    9
-
-columns: { W : 0,
-           B : 1,
-           Z : 2 }
-body:
-[[1, 7, 4],
- [7, 7, 3],
- [1, 9, 9],
- [1, 11, 9]
-]
-
-@ Class Table:
-
-private attribute: name, title, body
-
-method:
-
-- Constructor(name, filesource)
-return a Table instance with a supplier given name and string of file path
-
-- Constructor(name, title, body)
-return a Table instance with a supplier given name, pass-in other Table instance's title and body
-
-- Constructor(name, another Table instance)
-this is defined as copy() method, return a shallow copy of this Table instance.
-
-- getname()
-return a String name of this instance
-
-- gettitle()
-return the title(a linklisthashmap) of this instance
-
-- getbody()
-return the body (a matrix of array list contains string) of this instance
-
-- getColumnNum()
-return the number of total column of this instance.
-
-- getRowNum()
-return the number of total row of this instance (exclude title row)
-
-- rowGet(row index)
-return a copy list of the selected index of the table (exclude title row, start from 0)
-if the index is out of bound, raise error
-
-- columnGet(title name)
-return a copy list of selected column, if title name is not in the table, raise error
-
-- titleIn (title name)
-return if a supplier given title is in this table or not
-
-- getTitleIndex (title name)
-return the title name's index (start from 0, only for internal use)
-
-- titleAdd (column name)
-if has name, no change, if no, add name to the last with correct index, only to help the columnAdd method
-
-- checkSize (compared list, std)
-check if the compared list and std, if list too short, fill in the rest in blank, if the list too long, throw exception.
-only to help the columnAdd and rowAdd method
-
-- columnAdd (column name, a list)
-if name exist, replace the column, if no, add to the end
-
-- rowAdd (list)
-add the row to the end of the table
-
-- rowAdd (list, index)
-add the list to the given index(exclude the title row, start from 0)
-
-- titleDel (title name)
-only the helper method of columnDel
-
-- columnDel(title name)
-remove the column with the corresponding title name, if the name is not in the table, raise error
-
-- rowDel(row index)
-remove the row with the corresponding index, if the index is out of bound, nothing happend
-
-- isEmpty()
-return wether a table is empty(not include the title row)
-
-- copy()
-return a new table with shallow copy of this instance
-
-@ Class primi
-@ Class NAN
-
-method:
-- use enum instead of class
-garantee only one NAN instance is created.
+User input
+ |
+ |
+ Class Main
+ |
+ |
+ a tring
+ |
+ |
+ Class Parse
+ |
+ |
+ regular expression --> primary decide the form --> primary parse the string
+ |
+ |
+ further parsing, use the parssed title type word to decide
+ i need to add some more parse tech, formal pass to every token
 
 
-@ Class NOVALUE
-- use enum instead of class
-garantee only one NOVALUE instance is created.
+
+Interface Primitives
+
+ attribute type
+
+ checkType
+ check which type this primitive is
+
+ checkForm
+ to check if the instance is corretly formed
+
+ + - * / < > = method(Primitives other)
+ check type of the other
+ do whatever
+
+ self constructor must contain the type info, parsed from the
+
+Class MSQName
+
+Class MSQLiterals
+
+Class MSQString
+
+Class MSQFloat
+
+Class MSQInt
+
+Class NAN
+
+Class NOVALUE
 
 
-@ Class
+Table methos:
 
-@ Class Join:
-get common keys from keyA and keyB,
-use common keys and copy of bodyA, body B, filter copy bodyA, B
-add matrix C using common keys
-complete key
-while complete key, complete matrx C at the same time (do not need to iterate twice)
+- createNewTable(String name, String[] cols)
+name, cols is a MSQName
+name, cols have constructor, col has type instance
+checkForm(name)
+checkForm(cols)
+Table = new Table (name, cols, emtpy body)
 
 
-@ Class
+
+when select column, we will know the type, we select the column out as a ArrayList<String>, iterate each string and convert the string to corresponding type
+such as SQMString, SQMInt and SQMFloat

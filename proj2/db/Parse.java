@@ -1,37 +1,52 @@
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+package db;
 
+import sun.security.util.ByteArrayLexOrder;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.StringJoiner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * Created by Xiao Shi on 2017/4/21.
+ */
 public class Parse {
+
     // Various common constructs, simplifies parsing.
     // \s is space or return, to avoid misunderstanding of interpretor and garantee the \ to be passed
     // use two \\, so it is \\s
     private static final String SPACE = "\\s*",
-                                REST  = "\\s*(.*)\\s*",
-                                COMMA = "\\s*,\\s*",
-                                AND   = "\\s+and\\s+";
+            REST  = "\\s*(.*)\\s*",
+            COMMA = "\\s*,\\s*",
+            AND   = "\\s+and\\s+";
 
     // Stage 1 syntax, contains the command name.
     private static final Pattern CREATE_CMD = Pattern.compile(SPACE + "create table " + REST),
-                                 LOAD_CMD   = Pattern.compile("load " + REST),
-                                 STORE_CMD  = Pattern.compile("store " + REST),
-                                 DROP_CMD   = Pattern.compile("drop table " + REST),
-                                 INSERT_CMD = Pattern.compile("insert into " + REST),
-                                 PRINT_CMD  = Pattern.compile("print " + REST),
-                                 SELECT_CMD = Pattern.compile("select " + REST);
+            LOAD_CMD   = Pattern.compile(SPACE + "load " + REST),
+            STORE_CMD  = Pattern.compile(SPACE + "store " + REST),
+            DROP_CMD   = Pattern.compile(SPACE + "drop table " + REST),
+            INSERT_CMD = Pattern.compile(SPACE + "insert into " + REST),
+            PRINT_CMD  = Pattern.compile(SPACE + "print " + REST),
+            SELECT_CMD = Pattern.compile(SPACE + "select " + REST);
 
     // Stage 2 syntax, contains the clauses of commands.
     private static final Pattern CREATE_NEW  = Pattern.compile("(\\S+)\\s+\\(\\s*(\\S+\\s+\\S+\\s*" +
-                                               "(?:,\\s*\\S+\\s+\\S+\\s*)*)\\)"),
-                                 SELECT_CLS  = Pattern.compile("([^,]+?(?:,[^,]+?)*)\\s+from\\s+" +
-                                               "(\\S+\\s*(?:,\\s*\\S+\\s*)*)(?:\\s+where\\s+" +
-                                               "([\\w\\s+\\-*/'<>=!.]+?(?:\\s+and\\s+" +
-                                               "[\\w\\s+\\-*/'<>=!.]+?)*))?"),
-                                 CREATE_SEL  = Pattern.compile("(\\S+)\\s+as select\\s+" +
-                                                   SELECT_CLS.pattern()),
-                                 INSERT_CLS  = Pattern.compile("(\\S+)\\s+values\\s+(.+?" +
-                                               "\\s*(?:,\\s*.+?\\s*)*)");
+            "(?:,\\s*\\S+\\s+\\S+\\s*)*)\\)"),
+            SELECT_CLS  = Pattern.compile("([^,]+?(?:,[^,]+?)*)\\s+from\\s+" +
+                    "(\\S+\\s*(?:,\\s*\\S+\\s*)*)(?:\\s+where\\s+" +
+                    "([\\w\\s+\\-*/'<>=!.]+?(?:\\s+and\\s+" +
+                    "[\\w\\s+\\-*/'<>=!.]+?)*))?"),
+            CREATE_SEL  = Pattern.compile("(\\S+)\\s+as select\\s+" +
+                    SELECT_CLS.pattern()),
+            INSERT_CLS  = Pattern.compile("(\\S+)\\s+values\\s+(.+?" +
+                    "\\s*(?:,\\s*.+?\\s*)*)");
+
+    // Stage 3 syntax, the subexpressio
+    private static final Pattern
+            SUB_COMMA = Pattern.compile(COMMA),
+            SUB_AND = Pattern.compile(AND);
+
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -45,22 +60,35 @@ public class Parse {
     private static void eval(String query) {
         Matcher m;
         if ((m = CREATE_CMD.matcher(query)).matches()) {
-             createTable(m.group(1));
+            createTable(m.group(1));
         } else if ((m = LOAD_CMD.matcher(query)).matches()) {
-             loadTable(m.group(1));
+            loadTable(m.group(1));
         } else if ((m = STORE_CMD.matcher(query)).matches()) {
-             storeTable(m.group(1));
+            storeTable(m.group(1));
         } else if ((m = DROP_CMD.matcher(query)).matches()) {
-             dropTable(m.group(1));
+            dropTable(m.group(1));
         } else if ((m = INSERT_CMD.matcher(query)).matches()) {
-             insertRow(m.group(1));
+            insertRow(m.group(1));
         } else if ((m = PRINT_CMD.matcher(query)).matches()) {
-             printTable(m.group(1));
+            printTable(m.group(1));
         } else if ((m = SELECT_CMD.matcher(query)).matches()) {
-             select(m.group(1));
+            select(m.group(1));
         } else {
             System.err.printf("Malformed query: %s\n", query);
         }
+    }
+
+    private static ArrayList<String> evalSubExpr(String args) {
+        Matcher m_sub;
+        ArrayList<String> sub_args = new ArrayList<>();
+        if (!(SUB_AND.matcher(args).matches() || SUB_COMMA.matcher(args).matches())) {
+            sub_args.add(args);
+        } else if ((m_sub = SUB_AND.matcher(args)).matches() ||
+                   (m_sub = SUB_COMMA.matcher(args)).matches()) {
+            sub_args.addAll(evalSubExpr(m_sub.group(0)));
+            sub_args.addAll(evalSubExpr(m_sub.group(2)));
+        }
+        return sub_args;
     }
 
     private static void createTable(String expr) {

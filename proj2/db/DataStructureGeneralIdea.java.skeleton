@@ -122,7 +122,7 @@ method:
 garantee only one NAN instance is created.
 
 
-@ Class NOVALUE
+@ Enumerate NOVALUE
 - use enum instead of class
 garantee only one NOVALUE instance is created.
 
