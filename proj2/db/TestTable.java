@@ -38,21 +38,21 @@ public class TestTable {
         assertEquals(12, table.getRowNum());
 
         /* test method COLUMNGET() */
-        ArrayList<String> select_col = table.columnGet("T str");
+        ArrayList<MSQContainer> select_col = table.columnGet("T str");
         assertEquals(12, select_col.size());
-        assertEquals("Golden Bears", select_col.get(0));
+        assertEquals("'Golden Bears'", select_col.get(0));
 
         /* test method ROWGET() */
-        ArrayList<String> select_row  = table.rowGet(0);
+        ArrayList<MSQContainer> select_row  = table.rowGet(0);
         assertEquals(5, select_row.size());
         assertEquals("2016", select_row.get(1));
-        ArrayList<String> select_row1  = table.rowGet(110);
+        ArrayList<MSQContainer> select_row1  = table.rowGet(110);
         assertEquals(null, select_row1);
 
         /* test method COLUMNADD() */
-        ArrayList<String> col = new ArrayList<>();
-        col.add("12");
-        col.add("22");
+        ArrayList<MSQContainer> col = new ArrayList<>();
+        col.add(new MSQContainer("12", "int"));
+        col.add(new MSQContainer("22", "int"));
         table.columnAdd("T int", col);
         assertEquals(5, table.getColumnNum());
         assertEquals("12", table.getbody().get(0).get(4));
@@ -70,23 +70,23 @@ public class TestTable {
         assertEquals(4, table.getTitleIndex("New Col"));
 
         /* test method ROWADD() */
-        ArrayList<String> row = new ArrayList<>();
-        row.add("MNS");
-        row.add("2017");
+        ArrayList<MSQContainer> row = new ArrayList<>();
+        row.add(new MSQContainer("'MNS'", "string"));
+        row.add(new MSQContainer("2017", "int"));
         table.rowAdd(row);
         assertEquals(13, table.getRowNum());
-        assertEquals("MNS", table.getbody().get(12).get(0));
+        assertEquals("'MNS'", table.getbody().get(12).get(0));
         assertEquals(null, table.getbody().get(12).get(3));
 
         /* test method ROWADD() with index */
-        ArrayList<String> row2 = new ArrayList<>();
-        row2.add("MNS2");
-        row2.add("2018");
+        ArrayList<MSQContainer> row2 = new ArrayList<>();
+        row2.add(new MSQContainer("'MNS2'", "string"));
+        row2.add(new MSQContainer("2018", "int"));
         table.rowAdd(row2, 0);
         assertEquals(14, table.getRowNum());
 //        System.out.print(table.gettitle());
 //        System.out.print(table.getbody());
-        assertEquals("MNS2", table.getbody().get(0).get(0));
+        assertEquals("'MNS2'", table.getbody().get(0).get(0));
         assertEquals("2018", table.getbody().get(0).get(1));
         assertEquals(null, table.getbody().get(0).get(2));
 
@@ -117,9 +117,9 @@ public class TestTable {
         expectedEx.expectMessage("the added element is too long!");
 
         /* test when add a too long column*/
-        ArrayList<String> ele = new ArrayList<>();
+        ArrayList<MSQContainer> ele = new ArrayList<>();
         for (int i=0; i<100; i+=1) {
-            ele.add("fantastic!");
+            ele.add(new MSQContainer("'fantastic!'", "string"));
         }
         table.columnAdd("newCol String", ele);
 

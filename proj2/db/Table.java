@@ -2,6 +2,7 @@ package db;
 
 import edu.princeton.cs.introcs.In;
 
+import java.awt.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -12,8 +13,8 @@ public class Table {
 
     private String name;
     private TableBuilder tb;
-    private Map<String, Integer> title;
-    private ArrayList<ArrayList<String>> body;
+    private Map<MSQColName, Integer> title;
+    private ArrayList<ArrayList<MSQContainer>> body;
 
     Table(String name, String source) {
         this.name = name;
@@ -24,7 +25,7 @@ public class Table {
         this.body = tb.gettaBody();
     }
 
-    Table(String name, Map<String, Integer> t, ArrayList<ArrayList<String>> b) {
+    Table(String name, Map<MSQColName, Integer> t, ArrayList<ArrayList<MSQContainer>> b) {
         title = t;
         body = b;
         this.name = name;
@@ -34,9 +35,9 @@ public class Table {
         return this.name;
     }
 
-    Map<String, Integer> gettitle() { return this.title; }
+    Map<MSQColName, Integer> gettitle() { return this.title; }
 
-    ArrayList<ArrayList<String>> getbody() {
+    ArrayList<ArrayList<MSQContainer>> getbody() {
         return this.body;
     }
 
@@ -48,26 +49,36 @@ public class Table {
         return body.size();
     }
 
+    /* because the title is the MSQColname instance, can only compare its value (the real col name string to the given
+     * parameter
+     */
     boolean titleIn(String name) {
-        return title.containsKey(name);
+        ArrayList<MSQColName> t_key = new ArrayList<>(title.keySet());
+        for (MSQColName key : t_key) {
+            if (key.getValue().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /* get the index of a title name, if no exist return null*/
     int getTitleIndex(String name) {
-        if (titleIn(name)) {
-            return title.get(name);
+        ArrayList<MSQColName> t_key = new ArrayList<>(title.keySet());
+        for (MSQColName key : t_key) {
+            if (key.getValue().equals(name)) {
+                return title.get(key);
+            }
         }
-        else {
-            throw new RuntimeException("the given title is not in the table.");
-        }
+        throw new RuntimeException("the given title is not in the table.");
     }
 
     /* return a column selected by its column title,
 *  raise an error if the given title name is not in the table*/
-    public ArrayList<String> columnGet (String title_name) {
+    public ArrayList<MSQContainer> columnGet (String title_name) {
         try {
             int index = getTitleIndex(title_name);
-            ArrayList<String> col = new ArrayList<>();
+            ArrayList<MSQContainer> col = new ArrayList<>();
             int rowNum = getRowNum();
             for (int i = 0; i < rowNum; i += 1) {
                 col.add(body.get(i).get(index));
@@ -79,9 +90,13 @@ public class Table {
         }
     }
 
-    public ArrayList<String> rowGet (int row_index) {
+    /* must do the copy to every instance that the table contains, not only copy the address */
+    public ArrayList<MSQContainer> rowGet (int row_index) {
         try {
-            ArrayList<String> rtn_row = (ArrayList) body.get(row_index).clone();
+            ArrayList<MSQContainer> rtn_row = new ArrayList<>();
+            for (MSQContainer ctn : body.get(row_index)) {
+                rtn_row.add(ctn.copy());
+            }
             return rtn_row;
         } catch (RuntimeException e) {
             System.out.print("Row number is larger thant he larges row number of the table");
@@ -97,21 +112,25 @@ public class Table {
         try {getTitleIndex(name);}
         catch (RuntimeException e) {
             int size = title.size();
-            title.put(name, size);
+            MSQColName res_name = new MSQColName(name);
+            title.put(res_name, size);
         }
     }
 
     /* helper method for columneAdd and rowAdd.
     *  to check if the added in element's lengh and the table corresponding length:
-    *  - if the added in element is too short, compelte the rest as null elements;
+    *  - if the added in element is too short, compelte the rest as MSQNovalue instance;
     *  - if the added in element is too long, raise an error
     *  - else do nothing */
-    private void checkSize(ArrayList<String> to_check, int std) {
+    private void checkSize(ArrayList<MSQContainer> to_check, int std) {
         if (to_check.size() < std) {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
+            ArrayList<MSQColName> title_keys = new ArrayList<>(title.keySet());
             for (int i = 0; i < discranpcy; i += 1) {
-                to_check.add((String)null);
+                String col_type = title_keys.get(i).getColType();
+                MSQContainer nothing = new MSQContainer("", col_type);
+                to_check.add(nothing);
             }
         } else if (to_check.size() > std) {
             throw new RuntimeException("the added element is too long!");
@@ -120,8 +139,9 @@ public class Table {
 
     /* add horizontal column to the body
     *  if the name exists in the title, replace the old one
+    *  if does not exists in the title, add to the end
     *  if the list's length is not equal to the body, leave the rest in blank */
-    void columnAdd(String title_name, ArrayList<String> col) {
+    void columnAdd(String title_name, ArrayList<MSQContainer> col) {
         checkSize(col, body.size());
         titleAdd(title_name);
         try {
@@ -131,7 +151,6 @@ public class Table {
             }
         }
         catch (RuntimeException e) {
-            int index = title.size();
             for (int i = 0; i < getRowNum(); i += 1) {
                 body.get(i).add(col.get(i));
             }
@@ -139,12 +158,13 @@ public class Table {
     }
 
     /* helper method for COLUMNDEL, if you delete one title, all the title after that should be shifted
- *  it means that all titles has greater values should have value minus one*/
+     * it means that all titles has greater values should have value minus one*/
     private void titleDel(String title_name) {
         int index = getTitleIndex(title_name);
-        title.remove(title_name);
-        for (String t : title.keySet()) {
-            if (title.get(t) > index) {
+        for (MSQColName t : title.keySet()) {
+            if (title.get(t) == index) {
+                title.remove(t);
+            } else if (title.get(t) > index) {
                 title.put(t, title.get(t) - 1);
             }
         }
@@ -169,14 +189,14 @@ public class Table {
 
     /* add a row to the end of body
     *  if the row's length is not equal to the body, leave the rest in blank */
-    void rowAdd(ArrayList<String> row){
+    void rowAdd(ArrayList<MSQContainer> row){
         checkSize(row, getColumnNum());
         body.add(row);
     }
 
     /* add a row just in front of the given index
      * if the row's length is not equal to the body, leave the rest in blank */
-    void rowAdd(ArrayList<String> row, int index) {
+    void rowAdd(ArrayList<MSQContainer> row, int index) {
         checkSize(row, getColumnNum());
         body.add(index, row);
 
@@ -195,19 +215,18 @@ public class Table {
     }
 
     public Table copy(String new_name) {
-
         // create a copy of body
-        ArrayList<ArrayList<String>> copy_body  = new ArrayList<>();
+        ArrayList<ArrayList<MSQContainer>> copy_body  = new ArrayList<>();
         for (int row=0; row < getRowNum(); row += 1){
-            ArrayList<String> line = new ArrayList<>();
+            ArrayList<MSQContainer> line = new ArrayList<>();
             line.addAll(rowGet(row));
             copy_body.add(line);
         }
 
         // create a copy of title
-        Map<String, Integer> copy_title = new LinkedHashMap<>();
-        for (String k : title.keySet()) {
-            copy_title.put(k, title.get(k));
+        Map<MSQColName, Integer> copy_title = new LinkedHashMap<>();
+        for (MSQColName k : title.keySet()) {
+            copy_title.put(k.copy(), title.get(k));
         }
 
         Table copy_table = new Table(new_name, copy_title, copy_body);

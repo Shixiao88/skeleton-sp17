@@ -11,17 +11,6 @@ public interface Primitives {
 
     String getType();
 
-    boolean checkType();
+    String toString();
 
-    boolean checkForm();
-
-    Primitives MSQadd(Primitives other);
-
-    Primitives MSQminus(Primitives other);
-
-    Primitives MSQmultiply(Primitives other);
-
-    Primitives MSQdevide(Primitives other);
-
-    int MSQcompare(Primitives other);
 }

@@ -12,15 +12,15 @@ import java.util.*;
 /* the class that have some helper method to support Join*/
 public class JoinHelper {
 
-    static Map<String, Integer> commonTitle (Table table1, Table table2) {
+    static Map<MSQColName, Integer> commonTitle (Table table1, Table table2) {
 
         // the set does not garantee the order
-        Set<String> title_key1 = table1.gettitle().keySet();
-        Set<String> title_key2 = table2.gettitle().keySet();
-        Map<String, Integer> title_common = new LinkedHashMap<>();
+        Set<MSQColName> title_key1 = table1.gettitle().keySet();
+        Set<MSQColName> title_key2 = table2.gettitle().keySet();
+        Map<MSQColName, Integer> title_common = new LinkedHashMap<>();
         int common_key_index = 0;
 
-        for (String k1:title_key1) {
+        for (MSQColName k1:title_key1) {
             if (title_key2.contains(k1)) {
                 title_common.put(k1, common_key_index);
                 common_key_index += 1;
@@ -53,21 +53,21 @@ public class JoinHelper {
     *  this method will filter out all the common title that do not share value
     *  and return a pair isntance of tow integer list, which will correspondently
     *  refer to row index of table1's body and table2's body */
-    static commonRowIndexPair filter(Map<String, Integer> title_common, Table t1, Table t2) {
+    static commonRowIndexPair filter(Map<MSQColName, Integer> title_common, Table t1, Table t2) {
         // make copy of the two tables's body, will cut the body later
         ArrayList<Integer> common_row_index_t1 = new ArrayList<>();
         ArrayList<Integer> common_row_index_t2 = new ArrayList<>();
-        ArrayList<String> title_common_keys= new ArrayList<>(title_common.keySet());
+        ArrayList<MSQColName> title_common_keys= new ArrayList<>(title_common.keySet());
         // i cannot call get method in set because there is no get method in stupid java
         // so i will just iterate for one loop (get the first key)
-        String k = title_common_keys.get(0);
-        ArrayList<String> col1 = t1.columnGet(k);
-        ArrayList<String> col2 = t2.columnGet(k);
+        MSQColName k = title_common_keys.get(0);
+        ArrayList<MSQContainer> col1 = t1.columnGet(k.getValue());
+        ArrayList<MSQContainer> col2 = t2.columnGet(k.getValue());
         for (int i = 0; i < col1.size(); i += 1) {
             for (int i2 = 0; i2 < col2.size(); i2 += 1) {
-                String s1 = col1.get(i);
-                String s2 = col2.get(i2);
-                if (s1.equals(s2)) {
+                MSQContainer s1 = col1.get(i);
+                MSQContainer s2 = col2.get(i2);
+                if (s1.toString().equals(s2.toString())) {
                     common_row_index_t1.add(i);
                     common_row_index_t2.add(i2);
                 }
@@ -86,15 +86,15 @@ public class JoinHelper {
 
     /* after the filter out the first common title, filter out the no common ones with continues common
     / titles */
-    static commonRowIndexPair filterTail(Map<String, Integer> mp, Table t1, Table t2,
+    static commonRowIndexPair filterTail(Map<MSQColName, Integer> mp, Table t1, Table t2,
                            ArrayList<Integer> l1, ArrayList<Integer> l2) {
-        ArrayList<String> keys= new ArrayList<>(mp.keySet());
+        ArrayList<MSQColName> keys= new ArrayList<>(mp.keySet());
         for (int i = 1; i < keys.size(); i += 1) {
-            String k = keys.get(i);
-            ArrayList<String> col1 = t1.columnGet(k);
-            ArrayList<String> col2 = t2.columnGet(k);
+            MSQColName k = keys.get(i);
+            ArrayList<MSQContainer> col1 = t1.columnGet(k.getValue());
+            ArrayList<MSQContainer> col2 = t2.columnGet(k.getValue());
             for (int l = 0; l < l1.size(); l += 1) {
-                if (! col1.get(l1.get(l)).equals(col2.get(l2.get(l)))) {
+                if (! col1.get(l1.get(l)).toString().equals(col2.get(l2.get(l)).toString())) {
                     l1.remove(l);
                     l2.remove(l);
                 }
@@ -105,22 +105,22 @@ public class JoinHelper {
     }
 
     /* helper method to return the list that filter out the common title, by order from table1 to table2*/
-    static Map<String, Integer> completeTitle(Map<String, Integer> common_title,
-                                              Map<String, Integer> title1,
-                                              Map<String, Integer> title2) {
-            Map<String, Integer> whole_keys = new LinkedHashMap<>();
+    static Map<MSQColName, Integer> completeTitle(Map<MSQColName, Integer> common_title,
+                                              Map<MSQColName, Integer> title1,
+                                              Map<MSQColName, Integer> title2) {
+            Map<MSQColName, Integer> whole_keys = new LinkedHashMap<>();
         int key_index = 0;
-        for (String common_k : common_title.keySet()) {
+        for (MSQColName common_k : common_title.keySet()) {
             whole_keys.put(common_k, key_index);
             key_index += 1;
         }
-        for (String k1 : title1.keySet()) {
+        for (MSQColName k1 : title1.keySet()) {
             if (! common_title.containsKey(k1)) {
                 whole_keys.put(k1, key_index);
                 key_index += 1;
             }
         }
-        for (String k2 : title2.keySet()) {
+        for (MSQColName k2 : title2.keySet()) {
             if (! common_title.containsKey(k2)) {
                 whole_keys.put(k2, key_index);
                 key_index += 1;
@@ -130,16 +130,16 @@ public class JoinHelper {
     }
 
     /* helper method to return the not common key list */
-    static ArrayList<String> getNoCommonTitle (Map<String, Integer> common_title,
-                                               Map<String, Integer> title1,
-                                               Map<String, Integer> title2) {
-        ArrayList<String> no_common_keys = new ArrayList<>();
-        for (String k1 : title1.keySet()) {
+    static ArrayList<MSQColName> getNoCommonTitle (Map<MSQColName, Integer> common_title,
+                                               Map<MSQColName, Integer> title1,
+                                               Map<MSQColName, Integer> title2) {
+        ArrayList<MSQColName> no_common_keys = new ArrayList<>();
+        for (MSQColName k1 : title1.keySet()) {
             if (!common_title.containsKey(k1)) {
                 no_common_keys.add(k1);
             }
         }
-        for (String k2 : title2.keySet()) {
+        for (MSQColName k2 : title2.keySet()) {
             if (!common_title.containsKey(k2)) {
                 no_common_keys.add(k2);
             }
@@ -149,41 +149,41 @@ public class JoinHelper {
 
 
     static Table completeTable(String name, ArrayList<Integer> row_num_1, ArrayList<Integer> row_num_2,
-                               Map<String, Integer> common_title, Table t1, Table t2) {
-        Map<String, Integer> title1 = t1.gettitle();
-        Map<String, Integer> title2 = t2.gettitle();
-        Map<String, Integer> all_titles = completeTitle(common_title, t1.gettitle(), t2.gettitle());
-        ArrayList<ArrayList<String>> new_body = new ArrayList<>();
+                               Map<MSQColName, Integer> common_title, Table t1, Table t2) {
+        Map<MSQColName, Integer> title1 = t1.gettitle();
+        Map<MSQColName, Integer> title2 = t2.gettitle();
+        Map<MSQColName, Integer> all_titles = completeTitle(common_title, title1, title2);
+        ArrayList<ArrayList<MSQContainer>> new_body = new ArrayList<>();
         for (int row=0; row < row_num_1.size(); row +=1 ) {
-            ArrayList<String> line = new ArrayList<>();
+            ArrayList<MSQContainer> line = new ArrayList<>();
             int row_num = row_num_1.get(row);
-            for (String k : common_title.keySet()) {
-                int col_num = t1.getTitleIndex(k);
-                String element = t1.getbody().get(row_num).get(col_num);
+            for (MSQColName k : common_title.keySet()) {
+                int col_num = t1.getTitleIndex(k.getValue());
+                MSQContainer element = t1.getbody().get(row_num).get(col_num);
                 line.add(element);
             } new_body.add(line);
         }
         Table res = new Table(name, all_titles, new_body);
         // we finish the table with common titles
-        ArrayList<String> column = new ArrayList<>();
-        ArrayList<String> no_common_title_key = getNoCommonTitle(common_title, t1.gettitle(), t2.gettitle());
-        for (String nckey : no_common_title_key) {
+        ArrayList<MSQContainer> column = new ArrayList<>();
+        ArrayList<MSQColName> no_common_title_key = getNoCommonTitle(common_title, t1.gettitle(), t2.gettitle());
+        for (MSQColName nckey : no_common_title_key) {
             try {
-                int col_num = t1.getTitleIndex(nckey);
+                int col_num = t1.getTitleIndex(nckey.getValue());
 
                 for (int row = 0; row < row_num_1.size(); row += 1) {
                     int row_num = row_num_1.get(row);
-                    String element = t1.getbody().get(row_num).get(col_num);
+                    MSQContainer element = t1.getbody().get(row_num).get(col_num);
                     column.add(element);
                 }
             } catch (RuntimeException e) {
-                int col_num = t2.getTitleIndex(nckey);
+                int col_num = t2.getTitleIndex(nckey.getValue());
                 for (int row = 0; row < row_num_2.size(); row += 1) {
                     int row_num = row_num_2.get(row);
-                    String element = t2.getbody().get(row_num).get(col_num);
+                    MSQContainer element = t2.getbody().get(row_num).get(col_num);
                     column.add(element);
             }
-        }   res.columnAdd(nckey, column);
+        }   res.columnAdd(nckey.getValue(), column);
             column.clear();
     }
     return res;
@@ -203,17 +203,17 @@ public class JoinHelper {
      * finish the filling, and create the new table using title, and body parameter.
 
      * */
-    static Table cartesianProductCompleteTable (String name, Map<String, Integer> common_title, Table t1, Table t2) {
-        Map<String, Integer> total_title = completeTitle(common_title, t1.gettitle(), t2.gettitle());
+    static Table cartesianProductCompleteTable (String name, Map<MSQColName, Integer> common_title, Table t1, Table t2) {
+        Map<MSQColName, Integer> total_title = completeTitle(common_title, t1.gettitle(), t2.gettitle());
         int row_num_size1 = t1.getRowNum();
         int row_num_size2 = t2.getRowNum();
-        ArrayList<ArrayList<String>> new_body = new ArrayList<>();
+        ArrayList<ArrayList<MSQContainer>> new_body = new ArrayList<>();
         Table res = new Table(name, total_title, new_body);
         for (int row1 = 0; row1 < row_num_size1; row1 += 1) {
-            ArrayList<String> table1_line = t1.rowGet(row1);
+            ArrayList<MSQContainer> table1_line = t1.rowGet(row1);
             for (int row2 = 0; row2 < row_num_size2; row2 += 1) {
-                ArrayList<String> table2_line = t2.rowGet(row2);
-                ArrayList<String> line = new ArrayList<>();
+                ArrayList<MSQContainer> table2_line = t2.rowGet(row2);
+                ArrayList<MSQContainer> line = new ArrayList<>();
                 line.addAll(table1_line);
                 line.addAll(table2_line);
                 res.rowAdd(line);

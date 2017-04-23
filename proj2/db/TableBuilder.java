@@ -1,5 +1,6 @@
 package db;
 
+import java.awt.image.AreaAveragingScaleFilter;
 import java.util.*;
 
 /**
@@ -10,17 +11,19 @@ import java.util.*;
 public class TableBuilder {
 
     private String name;
-    private Map<String, Integer> title;
-    private ArrayList<ArrayList<String>> body;
+    private Map<MSQColName, Integer> title;
+    private ArrayList<ArrayList<MSQContainer>> body;
 
     TableBuilder(String name, ParseSource ps) {
-        this.name = name;
+
         ArrayList<String> origin_title = ps.parseSourceTitle();
-        this.body = ps.parseSourceBody();
+        ArrayList<ArrayList<String>> original_body = ps.parseSourceBody();
+        this.name = name;
         this.title = convertTitle(origin_title);
+        this.body = convertBody(original_body);
     }
 
-    TableBuilder(String name, Map<String, Integer> title, ArrayList<ArrayList<String>> body) {
+    TableBuilder(String name, Map<MSQColName, Integer> title, ArrayList<ArrayList<MSQContainer>> body) {
         this.name = name;
         this.body = body;
         this.title = title;
@@ -30,24 +33,39 @@ public class TableBuilder {
         return this.name;
     }
 
-    Map<String, Integer> gettaTitle() {
+    Map<MSQColName, Integer> gettaTitle() {
         return this.title;
     }
 
-    ArrayList<ArrayList<String>> gettaBody() {
+    ArrayList<ArrayList<MSQContainer>> gettaBody() {
         return this.body;
     }
 
-    Map<String, Integer> convertTitle(ArrayList<String> origin_title) {
-        Map<String, Integer> temp_title = new LinkedHashMap<>();
+    Map<MSQColName, Integer> convertTitle(ArrayList<String> origin_title) {
+        Map<MSQColName, Integer> temp_title = new LinkedHashMap<>();
         try {
             for (int index = 0; index < origin_title.size(); index += 1 ) {
-                temp_title.put(origin_title.get(index), index);
+                MSQColName col = new MSQColName(origin_title.get(index));
+                temp_title.put(col, index);
             }
             return temp_title;
         } catch (NullPointerException e) {
             System.out.println ("there is no title");
             return temp_title;
         }
+    }
+
+    ArrayList<ArrayList<MSQContainer>> convertBody(ArrayList<ArrayList<String>> original_body) {
+        ArrayList<ArrayList<MSQContainer>> temp_body = new ArrayList<>();
+
+        for (int line_index = 0; line_index<original_body.size(); line_index += 1) {
+            for (int i = 0; i < original_body.get(line_index).size(); i += 1) {
+                String contained = original_body.get(line_index).get(i);
+                ArrayList<MSQColName> cols_keys= new ArrayList<>(title.keySet());
+                String col_type = cols_keys.get(i).getColType();
+                temp_body.get(line_index).set(i, new MSQContainer(contained, col_type));
+            }
+        }
+        return temp_body;
     }
 }

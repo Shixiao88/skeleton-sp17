@@ -15,7 +15,7 @@ public class Join {
             Table res = t1.copy(join_name);
             return res;
         } else {
-            Map<String, Integer> common_t = JoinHelper.commonTitle(t1, t2);
+            Map<MSQColName, Integer> common_t = JoinHelper.commonTitle(t1, t2);
 
             // t1 and t2 share column
             if (common_t.size() > 0) {

@@ -32,8 +32,6 @@ public class ParseSource {
                 if (c == ',') {
                     clearTitleBuffer();
                     continue;
-                } else if(c == '\'' || c == '"') {
-                    continue;
                 }
                 titleBuffer(c);
             } clearTitleBuffer();
@@ -52,8 +50,6 @@ public class ParseSource {
                     Character c = line.charAt(i);
                     if (c == ',') {
                         clearBodyBuffer(line_i);
-                        continue;
-                    } else if (c == '\'' || c == '"') {
                         continue;
                     }
                     bodyBuffer(c);

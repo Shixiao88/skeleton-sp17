@@ -20,7 +20,7 @@ public class TestTableBuilder {
         assertEquals((Integer)0, (Integer)tb.gettaTitle().get("T str"));
         assertEquals((Integer)4, (Integer)tb.gettaTitle().get("T int"));
         assertEquals("2016", tb.gettaBody().get(0).get(1));
-        assertEquals("Patriots", tb.gettaBody().get(11).get(0));
+        assertEquals("'Patriots'", tb.gettaBody().get(11).get(0));
     }
 
     @Test

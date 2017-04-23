@@ -1,38 +1,57 @@
 package db;
 
+import java.util.Comparator;
+
 /**
  * Created by Xiao Shi on 2017/4/21.
  */
-public class MSQString implements Primitives {
+public class MSQString extends MSQOperable {
 
-    private String type;
+    private String Value;
+    private String Type;
 
-    MSQString() {
-        type = "String";
+    MSQString(String value) {
+        this.Value = value;
+        this.Type = "string";
     }
 
     @Override
-    public String getType() {return "";}
+    public String getType() {
+        return Type;
+    }
+
+    public String getOprValue() {
+        return Value;
+    }
 
     @Override
-    public boolean checkType() {return false; }
+    public MSQString copy() {
+        return new MSQString(Value);
+    }
 
     @Override
-    public boolean checkForm() {return false;}
+    public String toString() {
+        if (Value != null) {
+            return "'" + Value + "'";
+        }
+        return null;
+    }
 
     @Override
-    public Primitives MSQadd(Primitives other) {return null;}
+    public MSQOperable add(MSQOperable other) {
+        if (other.getType().equals("string")) {
+            String res = Value + other.getOprValue();
+            return new MSQString(res);
+        }
+        throw new RuntimeException("String can only add to string");
+    }
 
     @Override
-    public Primitives MSQminus(Primitives other) {return null;}
-
-    @Override
-    public Primitives MSQmultiply(Primitives other) {return null;}
-
-    @Override
-    public Primitives MSQdevide(Primitives other) {return null;}
-
-    @Override
-    public int MSQcompare(Primitives other) {return 0;}
-
+    public int compare (MSQOperable other) {
+        try {
+            return this.getOprValue().compareTo((String)other.getOprValue());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Bad comparison element types");
+        }
+    }
 }

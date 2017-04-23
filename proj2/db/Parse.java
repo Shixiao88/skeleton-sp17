@@ -42,12 +42,6 @@ public class Parse {
             INSERT_CLS  = Pattern.compile("(\\S+)\\s+values\\s+(.+?" +
                     "\\s*(?:,\\s*.+?\\s*)*)");
 
-    // Stage 3 syntax, the subexpressio
-    private static final Pattern
-            SUB_COMMA = Pattern.compile(COMMA),
-            SUB_AND = Pattern.compile(AND);
-
-
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Expected a single query argument");
@@ -78,18 +72,6 @@ public class Parse {
         }
     }
 
-    private static ArrayList<String> evalSubExpr(String args) {
-        Matcher m_sub;
-        ArrayList<String> sub_args = new ArrayList<>();
-        if (!(SUB_AND.matcher(args).matches() || SUB_COMMA.matcher(args).matches())) {
-            sub_args.add(args);
-        } else if ((m_sub = SUB_AND.matcher(args)).matches() ||
-                   (m_sub = SUB_COMMA.matcher(args)).matches()) {
-            sub_args.addAll(evalSubExpr(m_sub.group(0)));
-            sub_args.addAll(evalSubExpr(m_sub.group(2)));
-        }
-        return sub_args;
-    }
 
     private static void createTable(String expr) {
         Matcher m;
@@ -113,6 +95,12 @@ public class Parse {
     }
 
     private static void createSelectedTable(String name, String exprs, String tables, String conds) {
+        /* name is the table name
+        *  exprs is comma split
+        *  tables is comma split
+        *  cons is and split
+        *  */
+
         System.out.printf("You are trying to create a table named %s by selecting these expressions:" +
                 " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", name, exprs, tables, conds);
     }
