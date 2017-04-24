@@ -1,6 +1,5 @@
 package db;
 import static org.junit.Assert.*;
-
 import edu.princeton.cs.introcs.In;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,18 +13,18 @@ import java.util.*;
  */
 public class TestTable {
 
-    Table table = new Table("test table", "test/test.tbl");
+    Table table = new Table("test_table", "test/test.tbl");
 
     @Test
     public void testConstructor() {
 
         /* test constructor by calling the source path */
 
-        System.out.println(table.gettitle());
-        System.out.println(table.getbody());
+//        System.out.println(table.gettitle());
+//        System.out.println(table.getbody());
 
         /* test method GETNAME()*/
-        assertEquals("test table", table.getname());
+        assertEquals("test_table", table.getname());
 
         /* test method TITLEIN()*/
         assertTrue(table.titleIn("W int"));
@@ -38,14 +37,14 @@ public class TestTable {
         assertEquals(12, table.getRowNum());
 
         /* test method COLUMNGET() */
-        ArrayList<MSQContainer> select_col = table.columnGet("T str");
+        ArrayList<MSQContainer> select_col = table.columnGet("T string");
         assertEquals(12, select_col.size());
-        assertEquals("'Golden Bears'", select_col.get(0));
+        assertEquals("'Golden Bears'", select_col.get(0).toString());
 
         /* test method ROWGET() */
         ArrayList<MSQContainer> select_row  = table.rowGet(0);
         assertEquals(5, select_row.size());
-        assertEquals("2016", select_row.get(1));
+        assertEquals("2016", select_row.get(1).toString());
         ArrayList<MSQContainer> select_row1  = table.rowGet(110);
         assertEquals(null, select_row1);
 
@@ -55,19 +54,20 @@ public class TestTable {
         col.add(new MSQContainer("22", "int"));
         table.columnAdd("T int", col);
         assertEquals(5, table.getColumnNum());
-        assertEquals("12", table.getbody().get(0).get(4));
-        assertEquals(null, table.getbody().get(4).get(4));
-        table.columnAdd("New Col", col);
+        assertEquals("12", table.getbody().get(0).get(4).toString());
+        assertEquals("NOVALUE", table.getbody().get(4).get(4).toString());
+        table.columnAdd("Newcol int", col);
         assertEquals(6, table.getColumnNum());
 //      System.out.print(table.gettitle());
-        assertEquals((Integer) 5, table.gettitle().get("New Col"));
-        assertEquals("12", table.getbody().get(0).get(5));
-        assertEquals(null, table.getbody().get(4).get(5));
+        assertEquals(5, table.getTitleIndex("Newcol int"));
+        assertEquals("12", table.getbody().get(0).get(5).toString());
+        assertEquals("NOVALUE", table.getbody().get(4).get(5).toString());
 
         /* test method COLUMNDEL()*/
-        table.columnDel("T str");
+        System.out.println(table.gettitle());
+        table.columnDel("T string");
         assertEquals(5, table.getColumnNum());
-        assertEquals(4, table.getTitleIndex("New Col"));
+        assertEquals(4, table.getTitleIndex("Newcol int"));
 
         /* test method ROWADD() */
         ArrayList<MSQContainer> row = new ArrayList<>();
@@ -75,8 +75,8 @@ public class TestTable {
         row.add(new MSQContainer("2017", "int"));
         table.rowAdd(row);
         assertEquals(13, table.getRowNum());
-        assertEquals("'MNS'", table.getbody().get(12).get(0));
-        assertEquals(null, table.getbody().get(12).get(3));
+        assertEquals("'MNS'", table.getbody().get(12).get(0).toString());
+        assertEquals("NOVALUE", table.getbody().get(12).get(3).toString());
 
         /* test method ROWADD() with index */
         ArrayList<MSQContainer> row2 = new ArrayList<>();
@@ -86,25 +86,26 @@ public class TestTable {
         assertEquals(14, table.getRowNum());
 //        System.out.print(table.gettitle());
 //        System.out.print(table.getbody());
-        assertEquals("'MNS2'", table.getbody().get(0).get(0));
-        assertEquals("2018", table.getbody().get(0).get(1));
-        assertEquals(null, table.getbody().get(0).get(2));
+        assertEquals("'MNS2'", table.getbody().get(0).get(0).toString());
+        assertEquals("2018", table.getbody().get(0).get(1).toString());
+        assertEquals("NOVALUE", table.getbody().get(0).get(2).toString());
 
         /* test method ROWDEL() with row index */
         Table table3 = new Table("test_table2", "test/test.tbl");
         table3.rowDel(0);
         assertEquals(11, table3.getRowNum());
-        assertEquals("2015", table3.getbody().get(0).get(1));
+        assertEquals("2015", table3.getbody().get(0).get(1).toString());
     }
 
     @Test
     public void TestCopy() {
         Table target = new Table("target", "test/t1.tbl");
         Table copy = target.copy("copy");
-        assertEquals(target.gettitle(), copy.gettitle());
-        assertEquals(target.getbody(), copy.getbody());
-        copy.rowDel(0);
+        assertEquals(target.getRowNum(), copy.getRowNum());
+        assertEquals(target.getColumnNum(), copy.getColumnNum());
+        assertNotEquals(target.gettitle(), copy.gettitle());
         assertNotEquals(target.getbody(), copy.getbody());
+        copy.rowDel(0);
         assertEquals(target.getRowNum()-1, copy.getRowNum());
     }
 
@@ -119,11 +120,14 @@ public class TestTable {
         /* test when add a too long column*/
         ArrayList<MSQContainer> ele = new ArrayList<>();
         for (int i=0; i<100; i+=1) {
-            ele.add(new MSQContainer("'fantastic!'", "string"));
+            ele.add(new MSQContainer("'fantastic'", "string"));
         }
-        table.columnAdd("newCol String", ele);
+        MSQColName t = new MSQColName("newcol string");
+        table.columnAdd("newcol string", ele);
 
         /* test when add a too log row */
+//        MSQContainer first =new MSQContainer("'year'", "string");
+//        ele.add(0, first);
         table.rowAdd(ele);
     }
 

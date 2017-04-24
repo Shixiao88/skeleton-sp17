@@ -1,5 +1,7 @@
 package db;
 
+import sun.invoke.util.VerifyAccess;
+
 import java.util.Comparator;
 
 /**
@@ -7,12 +9,21 @@ import java.util.Comparator;
  */
 public class MSQString extends MSQOperable {
 
+    private String Value_quotes;
     private String Value;
     private String Type;
 
     MSQString(String value) {
-        this.Value = value;
+        this.Value_quotes = value;
+        this.Value = "";
         this.Type = "string";
+        for (int i = 1; i < Value_quotes.length() - 1; i += 1){
+            this.Value += Value_quotes.charAt(i);
+        }
+    }
+
+    void add_space(String[] lst_no_space) {
+        this.Value = String.join(" ", lst_no_space);
     }
 
     @Override
@@ -40,7 +51,7 @@ public class MSQString extends MSQOperable {
     @Override
     public MSQOperable add(MSQOperable other) {
         if (other.getType().equals("string")) {
-            String res = Value + other.getOprValue();
+            String res = "'" + getOprValue() + " " + other.getOprValue() + "'";
             return new MSQString(res);
         }
         throw new RuntimeException("String can only add to string");

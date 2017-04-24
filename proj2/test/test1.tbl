@@ -1,1 +1,1 @@
-T str,S int,W int,L int,T int
+T string,S int,W int,L int,T int

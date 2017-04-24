@@ -23,12 +23,15 @@ public class MSQColName {
         if ((m = _COLTITLE.matcher(col_name)).matches() &&
                 (ColTypePattern.contains(m.group(2)))) {
                 titleName = m.group(1);
-                Value = col_name;
                 ColType = m.group(2);
+                Value = titleName + " " + ColType;
                 Type = "_MSQColName";
+        } else {
+            throw new RuntimeException("Bad formed column names");
         }
-        throw new RuntimeException("Bad formed column names");
     }
+
+    public String getTitleName() { return titleName; }
 
     public String getValue() {
         return Value;
@@ -38,11 +41,10 @@ public class MSQColName {
         return ColType;
     }
 
-
     public String getType() {return Type; }
 
     public MSQColName copy() {
-        return new MSQColName(Value + " " + ColType);
+        return new MSQColName(Value);
     }
 
     public String toString() {

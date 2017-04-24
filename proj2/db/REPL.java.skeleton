@@ -4,7 +4,7 @@ User input
  Class Main
  |
  |
- a tring
+ a string
  |
  |
  Class Parse
@@ -18,47 +18,51 @@ User input
 
 
 
-Interface Primitives
+Primitives data structure
 
- attribute type
+                    Primitives Interface
+                           |
+                           |
 
- checkType
- check which type this primitive is
-
- checkForm
- to check if the instance is corretly formed
-
- + - * / < > = method(Primitives other)
- check type of the other
- do whatever
-
- self constructor must contain the type info, parsed from the
-
-Class MSQName
-
-Class MSQLiterals
-
-Class MSQString
-
-Class MSQFloat
-
-Class MSQInt
-
-Class NAN
-
-Class NOVALUE
-
-
-Table methos:
-
-- createNewTable(String name, String[] cols)
-name, cols is a MSQName
-name, cols have constructor, col has type instance
-checkForm(name)
-checkForm(cols)
-Table = new Table (name, cols, emtpy body)
+TableName                ColName               Operable
+                                                  |
+                                                  |
+                                     String    Int   Float   NoValue   NAN
 
 
 
-when select column, we will know the type, we select the column out as a ArrayList<String>, iterate each string and convert the string to corresponding type
-such as SQMString, SQMInt and SQMFloat
+Container
+
+relation: the container has-a Operable
+
+
+
+TableName :
+1. only when fit the pattern will initiate a Table name, a TableName will decide the instance itself
+2. Tablename will have its own type "_TABLENAME"
+
+
+ColName :
+1. only when fit the colname pattern (X int/string/float)
+2. Colname will have its own type "_COLNAME", also have a Coltype to cast the corresponding row of containers
+   only the containees in the container share the same type can be fit in
+3. Colname have two types of names, one is the complete name (the getValue() method)
+                                    two is the partial name (only the first part, not include the coltype)
+4. Colname have operations, this will be its rows of containers to do the operation
+
+
+Container :
+1. has coltype, decede by pass-in parameters
+2. only the value of its containee fit the patter, and fit the coltype can be stored in
+3. a operation between two conainer is the operation of two containees, the compile type will be Operable (to
+    avoid the annoying generic proble)
+4. a operation betwwen a container and single literal will be transfered to operation between two containers (the
+    single literal will be created its container with it's type as the container's coltype)
+
+
+Operable :
+1. subclass is string, float, int, novalue and nan
+
+
+Special value -- Novalue :
+1. the tricky of novalue is the operation,

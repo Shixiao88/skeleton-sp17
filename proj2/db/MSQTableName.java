@@ -16,8 +16,11 @@ public class MSQTableName extends MSQUnoperable {
         if ((_TABLETITLE.matcher(table_name)).matches()) {
             Value = table_name;
             Type = "_MSQTableName";
+        }else {
+            throw new RuntimeException("only letters, numbers and underscores, and must start with a letter.");
         }
     }
+
 
     @Override
     public String getType() {

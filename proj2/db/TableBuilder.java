@@ -57,14 +57,15 @@ public class TableBuilder {
 
     ArrayList<ArrayList<MSQContainer>> convertBody(ArrayList<ArrayList<String>> original_body) {
         ArrayList<ArrayList<MSQContainer>> temp_body = new ArrayList<>();
-
-        for (int line_index = 0; line_index<original_body.size(); line_index += 1) {
+        for (int line_index = 0; line_index < original_body.size(); line_index += 1) {
+            ArrayList<MSQContainer> temp_line = new ArrayList<>();
             for (int i = 0; i < original_body.get(line_index).size(); i += 1) {
                 String contained = original_body.get(line_index).get(i);
-                ArrayList<MSQColName> cols_keys= new ArrayList<>(title.keySet());
+                ArrayList<MSQColName> cols_keys = new ArrayList<>(this.title.keySet());
                 String col_type = cols_keys.get(i).getColType();
-                temp_body.get(line_index).set(i, new MSQContainer(contained, col_type));
+                temp_line.add(new MSQContainer(contained, col_type));
             }
+            temp_body.add(temp_line);
         }
         return temp_body;
     }

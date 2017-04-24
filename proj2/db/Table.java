@@ -53,24 +53,16 @@ public class Table {
      * parameter
      */
     boolean titleIn(String name) {
-        ArrayList<MSQColName> t_key = new ArrayList<>(title.keySet());
-        for (MSQColName key : t_key) {
-            if (key.getValue().equals(name)) {
-                return true;
-            }
-        }
-        return false;
+        return titleGet(name) >= 0;
     }
 
     /* get the index of a title name, if no exist return null*/
     int getTitleIndex(String name) {
-        ArrayList<MSQColName> t_key = new ArrayList<>(title.keySet());
-        for (MSQColName key : t_key) {
-            if (key.getValue().equals(name)) {
-                return title.get(key);
-            }
+        if (titleIn(name)) {
+            return titleGet(name);
+        } else {
+            throw new RuntimeException("the given title is not in the table.");
         }
-        throw new RuntimeException("the given title is not in the table.");
     }
 
     /* return a column selected by its column title,
@@ -99,7 +91,7 @@ public class Table {
             }
             return rtn_row;
         } catch (RuntimeException e) {
-            System.out.print("Row number is larger thant he larges row number of the table");
+            System.out.print("Row number is larger than the larges row number of the table");
             return null;
         }
     }
@@ -117,18 +109,36 @@ public class Table {
         }
     }
 
-    /* helper method for columneAdd and rowAdd.
+    /* helper method for columneAdd.
     *  to check if the added in element's lengh and the table corresponding length:
     *  - if the added in element is too short, compelte the rest as MSQNovalue instance;
     *  - if the added in element is too long, raise an error
     *  - else do nothing */
-    private void checkSize(ArrayList<MSQContainer> to_check, int std) {
+    private void checkColSize(ArrayList<MSQContainer> to_check, int std, String col_type) {
         if (to_check.size() < std) {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
-            ArrayList<MSQColName> title_keys = new ArrayList<>(title.keySet());
             for (int i = 0; i < discranpcy; i += 1) {
-                String col_type = title_keys.get(i).getColType();
+                MSQContainer nothing = new MSQContainer("", col_type);
+                to_check.add(nothing);
+            }
+        } else if (to_check.size() > std) {
+            throw new RuntimeException("the added element is too long!");
+        }
+    }
+
+        /* helper method for rowAdd.
+    *  to check if the added in element's lengh and the table corresponding length:
+    *  - if the added in element is too short, compelte the rest as MSQNovalue instance;
+    *  - if the added in element is too long, raise an error
+    *  - else do nothing */
+    private void checkRowSize(ArrayList<MSQContainer> to_check, int std, Set<MSQColName> t_k) {
+        if (to_check.size() < std) {
+            int to_check_size = to_check.size();
+            int discranpcy = std - to_check_size;
+            ArrayList<MSQColName> title_key_lst = new ArrayList<>(t_k);
+            for (int i = 0; i < discranpcy; i += 1) {
+                String col_type = title_key_lst.get(i).getColType();
                 MSQContainer nothing = new MSQContainer("", col_type);
                 to_check.add(nothing);
             }
@@ -142,7 +152,8 @@ public class Table {
     *  if does not exists in the title, add to the end
     *  if the list's length is not equal to the body, leave the rest in blank */
     void columnAdd(String title_name, ArrayList<MSQContainer> col) {
-        checkSize(col, body.size());
+        String col_type = new MSQColName(title_name).getColType();
+        checkColSize(col, body.size(), col_type);
         titleAdd(title_name);
         try {
             int index = getTitleIndex(title_name);
@@ -157,15 +168,26 @@ public class Table {
         }
     }
 
+
+    /* helper method for title.get(string title)*/
+    private int titleGet(String title_name) {
+        for (MSQColName k : this.title.keySet()) {
+            if (k.getValue().equals(title_name)) {
+                return this.title.get(k);
+            }
+        } return -1;
+    }
+
     /* helper method for COLUMNDEL, if you delete one title, all the title after that should be shifted
      * it means that all titles has greater values should have value minus one*/
     private void titleDel(String title_name) {
         int index = getTitleIndex(title_name);
-        for (MSQColName t : title.keySet()) {
-            if (title.get(t) == index) {
-                title.remove(t);
-            } else if (title.get(t) > index) {
-                title.put(t, title.get(t) - 1);
+        ArrayList<MSQColName> copy = new ArrayList<>(title.keySet());
+        for ( MSQColName k : copy) {
+            if (title.get(k) == index) {
+                title.remove(k);
+            } else if (title.get(k) > index) {
+                title.put(k, title.get(k) - 1);
             }
         }
     }
@@ -190,14 +212,14 @@ public class Table {
     /* add a row to the end of body
     *  if the row's length is not equal to the body, leave the rest in blank */
     void rowAdd(ArrayList<MSQContainer> row){
-        checkSize(row, getColumnNum());
+        checkRowSize(row, getColumnNum(), this.title.keySet());
         body.add(row);
     }
 
     /* add a row just in front of the given index
      * if the row's length is not equal to the body, leave the rest in blank */
     void rowAdd(ArrayList<MSQContainer> row, int index) {
-        checkSize(row, getColumnNum());
+        checkRowSize(row, getColumnNum(),this.title.keySet());
         body.add(index, row);
 
     }

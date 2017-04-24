@@ -31,7 +31,7 @@ public class MSQNovalue extends MSQOperable{
 
     @Override
     public String toString() {
-        return "NONVALUE";
+        return "NOVALUE";
     }
 
     public Object getOprValue() {

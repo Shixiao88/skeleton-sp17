@@ -1,4 +1,4 @@
-T str,S int,W int,L int,T int
+T string,S int,W int,L int,T int
 'Golden Bears',2016,5,7,0
 'Golden Bears',2015,8,5,0
 'Golden Bears',2014,5,7,0

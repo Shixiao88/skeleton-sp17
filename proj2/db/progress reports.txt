@@ -1,8 +1,12 @@
 
-1. i have update all the talbes and titles to the right format
+today done 3/4 tests, no new code yet
 
-2. i need to do test for 
+2. i need to do test for:
  - all the parsing of the MSQColname, MSQString, int, float, etc.
+ done
  - all the original test, especially for the join-helper, i am not sure all the copy process that i cange from string to the MSQColname will make any difference, note that i have some contains() method in join helper that i am not sure can work the same way
- - because i cange the title and body from string to the class instance, i need to specially check all the copy method
+ done
+ - because i change the title and body from string to the class instance, i need to specially check all the copy method
+ done
  - the operation method, especially the NOVALUE minus method.
+ not yet
