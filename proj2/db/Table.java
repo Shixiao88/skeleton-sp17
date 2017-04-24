@@ -20,7 +20,7 @@ public class Table {
         this.name = name;
         ArrayList<String> rs = ReadSource.readSource(new In(source));
         ParseSource ps = new ParseSource(rs);
-        TableBuilder tb = new TableBuilder("test table", ps);
+        tb = new TableBuilder("test table", ps);
         this.title = tb.gettaTitle();
         this.body = tb.gettaBody();
     }

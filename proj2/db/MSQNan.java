@@ -31,7 +31,7 @@ public class MSQNan extends MSQOperable {
     }
 
     @Override
-    public Object getOprValue() {
+    public String getOprValue() {
         return null;
     }
 

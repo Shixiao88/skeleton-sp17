@@ -34,7 +34,7 @@ public class MSQNovalue extends MSQOperable{
         return "NOVALUE";
     }
 
-    public Object getOprValue() {
+    public String getOprValue() {
         if (Type == "string") {
             return new MSQString("").getOprValue();
         } else if (Type == "int") {
@@ -59,16 +59,6 @@ public class MSQNovalue extends MSQOperable{
 
     @Override
     public MSQOperable minus (MSQOperable other) {
-        if (other instanceof MSQNovalue) {
-            return new MSQNovalue();
-        } else if (Type.equals("float") || other.getType().equals("float")) {
-            return new MSQFloat(Float.toString(-(float) other.getOprValue()));
-        }
-        try {
-            return new MSQInt(Integer.toString(- (int)other.getOprValue()));
-        } catch (RuntimeException e) {
-            throw new RuntimeException("malformed operation, incorrect types");
-        }
-
+        return null;
     }
 }

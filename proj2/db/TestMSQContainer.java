@@ -1,6 +1,5 @@
 package db;
 import static org.junit.Assert.*;
-import edu.princeton.cs.introcs.In;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -89,6 +88,13 @@ public class TestMSQContainer {
         assertEquals("int", ctn3.getContainedElement().getType());
         assertEquals(3, ctn3.getContainedElement().getOprValue());
         assertEquals("3", ctn3.getContainedElement().toString());
+
+        // create float container instance
+        String s4 = "-3.";
+        MSQContainer ctn4 = new MSQContainer(s4);
+        assertEquals("float", ctn4.getContainedElement().getType());
+        assertEquals((float)-3.0, ctn4.getContainedElement().getOprValue());
+        assertEquals("-3.000", ctn4.getContainedElement().toString());
     }
 
 

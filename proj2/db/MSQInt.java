@@ -1,5 +1,8 @@
 package db;
 
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Interval1D;
+
 import java.util.IntSummaryStatistics;
 
 /**
@@ -31,33 +34,42 @@ public class MSQInt extends MSQOperable {
     }
 
     @Override
-    public Integer getOprValue() {
-        return Value;
+    public String getOprValue() {
+        return Integer.toString(Value);
+    }
+
+    public MSQInt reverseAdd() {
+        int res = 0 - Value;
+        return new MSQInt(Integer.toString(res));
     }
 
     @Override
     public MSQOperable add(MSQOperable other) {
         if (other.getOprValue().equals(null)) {
             return other.add(this);
-        }
-        try {
-            int res = Value + (int)other.getOprValue();
+        } else if (other.getType().equals("float")) {
+            return other.add(this);
+        } else if (other.getType().equals("int")) {
+            int res = Integer.parseInt(getOprValue()) + Integer.parseInt(other.getOprValue());
             return new MSQInt(Integer.toString(res));
-        } catch (RuntimeException e) {
+        } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }
     }
+
 
     @Override
     public MSQOperable minus (MSQOperable other) {
         if (other.getOprValue().equals(null)) {
             return other.minus(this);
-        }
-        try {
-            int res = Value - (int)other.getOprValue();
-            return new MSQInt(Integer.toString(res));
-        } catch (RuntimeException e) {
-            throw new RuntimeException("malformed operation, incorrect types");
+        } else if (other.getType().equals("float")) {
+            MSQFloat flt_rvsd = ((MSQFloat) other).reverseAdd();
+            return flt_rvsd.add(this);
+        } else if (other.getType().equals("int")) {
+            MSQInt int_rvsd = ((MSQInt) other).reverseAdd();
+            return int_rvsd.add(this);
+        } else {
+            throw new RuntimeException("\"malformed operation, incorrect types\"");
         }
     }
 

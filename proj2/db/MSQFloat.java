@@ -1,5 +1,7 @@
 package db;
 
+import edu.princeton.cs.algs4.In;
+
 /**
  * Created by Administrator on 2017/4/21.
  */
@@ -29,19 +31,27 @@ public class MSQFloat extends MSQOperable {
     }
 
     @Override
-    public Object getOprValue() {
-        return Value;
+    public String getOprValue() {
+        return Float.toString(Value);
+    }
+
+    // turn postive to negative, or the other way around to transfer minus to add
+    public MSQFloat reverseAdd() {
+        float res = 0 - Value;
+        return new MSQFloat(Float.toString(res));
     }
 
     @Override
     public MSQOperable add(MSQOperable other) {
         if (other.getOprValue().equals(null)) {
             return other.add(this);
-        }
-        try {
-            float res = Value + (float)other.getOprValue();
+        } else if (other.getType().equals("float")) {
+            float res = Value + Float.parseFloat(other.getOprValue());
             return new MSQFloat(Float.toString(res));
-        } catch (RuntimeException e) {
+        } else if (other.getType().equals("int")) {
+            float res = Value + Integer.parseInt(other.getOprValue());
+            return new MSQFloat(Float.toString(res));
+        } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }
     }
@@ -50,11 +60,13 @@ public class MSQFloat extends MSQOperable {
     public MSQOperable minus (MSQOperable other) {
         if (other.getOprValue().equals(null)) {
             return other.minus(this);
-        }
-        try {
-            float res = Value - (float)other.getOprValue();
-            return new MSQFloat(Float.toString(res));
-        } catch (RuntimeException e) {
+        } else if (other.getType().equals("float")) {
+            MSQFloat flt_rvsd = ((MSQFloat) other).reverseAdd();
+            return flt_rvsd.add(this);
+        } else if (other.getType().equals("int")) {
+            MSQInt int_rvsd = ((MSQInt) other).reverseAdd();
+            return int_rvsd.add(this);
+        } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }
     }

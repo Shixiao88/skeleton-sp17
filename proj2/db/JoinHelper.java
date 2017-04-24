@@ -21,7 +21,7 @@ public class JoinHelper {
         int common_key_index = 0;
 
         for (MSQColName k1:title_key1) {
-            if (title_key2.contains(k1)) {
+            if (table2.titleIn(k1.getValue())) {
                 title_common.put(k1, common_key_index);
                 common_key_index += 1;
                 }
@@ -114,14 +114,17 @@ public class JoinHelper {
             whole_keys.put(common_k, key_index);
             key_index += 1;
         }
+
+        Table temp1 = new Table ("temp1", title1, null);
+        Table temp2 = new Table ("temp2", title2, null);
         for (MSQColName k1 : title1.keySet()) {
-            if (! common_title.containsKey(k1)) {
+            if (! temp2.titleIn(k1.getValue())) {
                 whole_keys.put(k1, key_index);
                 key_index += 1;
             }
         }
         for (MSQColName k2 : title2.keySet()) {
-            if (! common_title.containsKey(k2)) {
+            if (! temp1.titleIn(k2.getValue())) {
                 whole_keys.put(k2, key_index);
                 key_index += 1;
             }
@@ -134,13 +137,15 @@ public class JoinHelper {
                                                Map<MSQColName, Integer> title1,
                                                Map<MSQColName, Integer> title2) {
         ArrayList<MSQColName> no_common_keys = new ArrayList<>();
+
+        Table temp = new Table ("temp", common_title, null);
         for (MSQColName k1 : title1.keySet()) {
-            if (!common_title.containsKey(k1)) {
+            if (!temp.titleIn(k1.toString())) {
                 no_common_keys.add(k1);
             }
         }
         for (MSQColName k2 : title2.keySet()) {
-            if (!common_title.containsKey(k2)) {
+            if (!temp.titleIn(k2.getValue())) {
                 no_common_keys.add(k2);
             }
         }
@@ -217,7 +222,6 @@ public class JoinHelper {
                 line.addAll(table1_line);
                 line.addAll(table2_line);
                 res.rowAdd(line);
-                System.out.println(line);
             }
         }
         return res;

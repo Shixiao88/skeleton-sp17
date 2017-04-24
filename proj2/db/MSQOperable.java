@@ -9,7 +9,7 @@ public abstract class MSQOperable implements Primitives{
         return "";
     }
 
-    public Object getOprValue() { return null; }
+    public String getOprValue() { return null; }
 
     public void setType(String col_type) {
     }
