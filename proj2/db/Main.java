@@ -22,16 +22,19 @@ public class Main {
             if (EXIT.equals(line)) {
                 break;
             }
-
-            if (!line.trim().isEmpty()) {
-                String result = db.transact(line);
-                if (result.length() > 0) {
-                    System.out.println(result);
+            try {
+                if (!line.trim().isEmpty()) {
+                    String result = db.transact(line);
+                    if (result.length() > 0) {
+                        System.out.println(result);
+                    }
                 }
+                System.out.print(PROMPT);
+            } catch (RuntimeException e) {
+                System.out.println("ERROR: " + e);
+                System.out.print(PROMPT);
             }
-            System.out.print(PROMPT);
         }
-
         in.close();
     }
 }

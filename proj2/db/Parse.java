@@ -1,9 +1,9 @@
 package db;
 
-import sun.security.util.ByteArrayLexOrder;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import javafx.scene.control.Tab;
+
+import javax.xml.crypto.Data;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,38 +42,39 @@ public class Parse {
             INSERT_CLS  = Pattern.compile("(\\S+)\\s+values\\s+(.+?" +
                     "\\s*(?:,\\s*.+?\\s*)*)");
 
-    public static void main(String[] args) {
+    public static String main(String[] args, Database db) {
         if (args.length != 1) {
             System.err.println("Expected a single query argument");
-            return;
+            return "";
         }
 
-        eval(args[0]);
+        return eval(args[0], db);
     }
 
-    private static void eval(String query) {
+    private static String eval(String query, Database db) {
         Matcher m;
         if ((m = CREATE_CMD.matcher(query)).matches()) {
-            createTable(m.group(1));
+            return createTable(m.group(1));
         } else if ((m = LOAD_CMD.matcher(query)).matches()) {
-            loadTable(m.group(1));
+            return loadTable(m.group(1), db);
         } else if ((m = STORE_CMD.matcher(query)).matches()) {
             storeTable(m.group(1));
         } else if ((m = DROP_CMD.matcher(query)).matches()) {
-            dropTable(m.group(1));
+            return dropTable(m.group(1), db);
         } else if ((m = INSERT_CMD.matcher(query)).matches()) {
             insertRow(m.group(1));
         } else if ((m = PRINT_CMD.matcher(query)).matches()) {
-            printTable(m.group(1));
+            return printTable(m.group(1), db);
         } else if ((m = SELECT_CMD.matcher(query)).matches()) {
             select(m.group(1));
         } else {
             System.err.printf("Malformed query: %s\n", query);
         }
+        return "";
     }
 
 
-    private static void createTable(String expr) {
+    private static String createTable(String expr) {
         Matcher m;
         if ((m = CREATE_NEW.matcher(expr)).matches()) {
             createNewTable(m.group(1), m.group(2).split(COMMA));
@@ -82,9 +83,10 @@ public class Parse {
         } else {
             System.err.printf("Malformed create: %s\n", expr);
         }
+        return "";
     }
 
-    private static void createNewTable(String name, String[] cols) {
+    private static String createNewTable(String name, String[] cols) {
         StringJoiner joiner = new StringJoiner(", ");
         for (int i = 0; i < cols.length-1; i++) {
             joiner.add(cols[i]);
@@ -92,6 +94,7 @@ public class Parse {
 
         String colSentence = joiner.toString() + " and " + cols[cols.length-1];
         System.out.printf("You are trying to create a table named %s with the columns %s\n", name, colSentence);
+        return "";
     }
 
     private static void createSelectedTable(String name, String exprs, String tables, String conds) {
@@ -105,15 +108,26 @@ public class Parse {
                 " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", name, exprs, tables, conds);
     }
 
-    private static void loadTable(String name) {
-        System.out.printf("You are trying to load the table named %s\n", name);
+    public static String testLoadTable(String name, Database db) {
+        return loadTable(name, db);
+    }
+
+    private static String loadTable(String name, Database db) {
+        Table t = new Table(name);
+        db.addTable(name, t);
+        return "";
     }
 
     private static void storeTable(String name) {
         System.out.printf("You are trying to store the table named %s\n", name);
     }
 
-    private static void dropTable(String name) {
+    private static String dropTable(String name, Database db) {
+        try {
+            db.selectTableByName(name);
+            db.
+        }
+        db.remove(name);
         System.out.printf("You are trying to drop the table named %s\n", name);
     }
 
@@ -127,8 +141,14 @@ public class Parse {
         System.out.printf("You are trying to insert the row \"%s\" into the table %s\n", m.group(2), m.group(1));
     }
 
-    private static void printTable(String name) {
-        System.out.printf("You are trying to print the table named %s\n", name);
+    public static String testPrintTable(String name, Database db) {
+        return printTable(name, db);
+    }
+
+    private static String printTable(String name, Database db) {
+        Table t = db.selectTableByName(name);
+        //System.out.print(t.toString());
+        return t.toString();
     }
 
     private static void select(String expr) {

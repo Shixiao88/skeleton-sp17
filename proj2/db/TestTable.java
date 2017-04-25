@@ -1,11 +1,9 @@
 package db;
 import static org.junit.Assert.*;
-import edu.princeton.cs.introcs.In;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -13,10 +11,17 @@ import java.util.*;
  */
 public class TestTable {
 
-    Table table = new Table("test_table", "test/test.tbl");
+    Table table = new Table("test_table", "test");
 
     @Test
     public void testConstructor() {
+
+        /* test of source constructor with the tbl name will be table's own name*/
+
+        Table table_auto_name = new Table("test");
+        assertEquals("test", table_auto_name.getname());
+        assertEquals(5, table_auto_name.getColumnNum());
+        assertEquals(12, table_auto_name.getRowNum());
 
         /* test constructor by calling the source path */
 
@@ -91,15 +96,21 @@ public class TestTable {
         assertEquals("NOVALUE", table.getbody().get(0).get(2).toString());
 
         /* test method ROWDEL() with row index */
-        Table table3 = new Table("test_table2", "test/test.tbl");
+        Table table3 = new Table("test_table2", "test");
         table3.rowDel(0);
         assertEquals(11, table3.getRowNum());
         assertEquals("2015", table3.getbody().get(0).get(1).toString());
+
+        Table table_for_prt = new Table("t1");
+        String prt = "x int,y int\n2,5\n8,3\n13,7";
+        assertEquals(prt, table_for_prt.toString());
     }
+
+
 
     @Test
     public void TestCopy() {
-        Table target = new Table("target", "test/t1.tbl");
+        Table target = new Table("target", "t1");
         Table copy = target.copy("copy");
         assertEquals(target.getRowNum(), copy.getRowNum());
         assertEquals(target.getColumnNum(), copy.getColumnNum());

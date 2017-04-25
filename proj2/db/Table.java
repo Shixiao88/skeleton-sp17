@@ -2,9 +2,10 @@ package db;
 
 import edu.princeton.cs.introcs.In;
 
-import java.awt.*;
-import java.lang.reflect.Array;
+import java.io.IOError;
 import java.util.*;
+
+
 
 /**
  * Created by Xiao Shi on 2017/4/17.
@@ -15,9 +16,26 @@ public class Table {
     private TableBuilder tb;
     private Map<MSQColName, Integer> title;
     private ArrayList<ArrayList<MSQContainer>> body;
+    private String path = "test/";
+    private String prefix = ".tbl";
 
-    Table(String name, String source) {
+    Table(String table_name) {
+        try {
+            String source = path + table_name + prefix;
+            this.name = table_name;
+            ArrayList<String> rs = ReadSource.readSource(new In(source));
+            ParseSource ps = new ParseSource(rs);
+            tb = new TableBuilder("test table", ps);
+            this.title = tb.gettaTitle();
+            this.body = tb.gettaBody();
+        } catch (IOError e) {
+            System.out.println("ERROR: TBL file not found: " + name + prefix);
+        }
+    }
+
+    Table(String name, String src) {
         this.name = name;
+        String source = path + src + prefix;
         ArrayList<String> rs = ReadSource.readSource(new In(source));
         ParseSource ps = new ParseSource(rs);
         tb = new TableBuilder("test table", ps);
@@ -257,6 +275,21 @@ public class Table {
 
     /* repr of the whole table*/
     public String toString() {
-        return "";
+        StringJoiner title_joiner = new StringJoiner(",");
+        String output = "";
+        for (MSQColName n : title.keySet()) {
+            title_joiner.add(n.toString());
+        }
+        output += title_joiner.toString();
+        for (ArrayList<MSQContainer> l : body) {
+            StringJoiner ctn_joiner = new StringJoiner(",");
+            for (MSQContainer ctn : l) {
+                ctn_joiner.add(ctn.toString());
+            }
+            output += "\n";
+            output += ctn_joiner.toString();
+        }
+        return output;
+
     }
 }
