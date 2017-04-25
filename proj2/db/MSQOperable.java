@@ -16,6 +16,10 @@ public abstract class MSQOperable implements Primitives{
 
     public MSQOperable copy(){ return null; }
 
+    MSQOperable reverseAdd() {return null; }
+
+    MSQOperable reverseMul() {return null; }
+
     // allow two instance do operation
     // return string, wrap to be MSQOperable later in ColName add method, to check if the type is match also.
     public MSQOperable add(MSQOperable other) {

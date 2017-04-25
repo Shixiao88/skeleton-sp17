@@ -6,9 +6,17 @@ package db;
 public class MSQNan extends MSQOperable {
 
     private String Type;
+    private Object Value;
 
     MSQNan() {
+        Value = null;
     }
+
+    MSQNan(String col_type){
+        Type = col_type;
+        Value = null;
+    }
+
 
     @Override
     public void setType(String col_type) {
@@ -32,7 +40,7 @@ public class MSQNan extends MSQOperable {
 
     @Override
     public String getOprValue() {
-        return null;
+        return (String)null;
     }
 
     @Override
@@ -42,6 +50,16 @@ public class MSQNan extends MSQOperable {
 
     @Override
     public MSQOperable minus (MSQOperable other) {
+        return new MSQNan();
+    }
+
+    @Override
+    public MSQOperable mul (MSQOperable other) {
+        return new MSQNan();
+    }
+
+    @Override
+    public MSQOperable divide (MSQOperable other) {
         return new MSQNan();
     }
 

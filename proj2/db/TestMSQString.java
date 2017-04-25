@@ -14,12 +14,16 @@ public class TestMSQString {
         // add operation
         MSQString s1 = new MSQString("'hello world'");
         MSQString s2 = new MSQString("'how are you'");
+        MSQNan nothing1 = new MSQNan();
+
         assertEquals("'hello world how are you'", s1.add(s2).toString());
+        assertTrue(s1.add(nothing1) instanceof MSQNan);
 
         // compare operation
         assertTrue(s1.compare(s2) < 0);
         MSQString s3 = new MSQString("'hello world'");
         assertTrue(s1.compare(s3) == 0);
+        assertTrue(s1.compare(nothing1) < 0);
     }
 
 

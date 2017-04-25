@@ -50,18 +50,23 @@ public class MSQString extends MSQOperable {
 
     @Override
     public MSQOperable add(MSQOperable other) {
-        if (other.getType().equals("string")) {
+        if (other instanceof MSQNan) {
+            return other.add(this);
+        } else if (other.getType().equals("string")) {
             String res = "'" + getOprValue() + " " + other.getOprValue() + "'";
             return new MSQString(res);
+        } else {
+            throw new RuntimeException("String can only add to string");
         }
-        throw new RuntimeException("String can only add to string");
     }
 
     @Override
     public int compare (MSQOperable other) {
-        try {
-            return this.getOprValue().compareTo((String)other.getOprValue());
-        } catch (RuntimeException e) {
+        if (other instanceof MSQNan){
+            return -1;
+        } else if (other.getType().equals("string")) {
+            return this.getOprValue().compareTo(other.getOprValue());
+        } else {
             throw new RuntimeException("Bad comparison element types");
         }
     }
