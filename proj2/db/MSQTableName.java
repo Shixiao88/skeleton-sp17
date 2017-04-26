@@ -21,7 +21,6 @@ public class MSQTableName extends MSQUnoperable {
         }
     }
 
-
     @Override
     public String getType() {
         return Type;

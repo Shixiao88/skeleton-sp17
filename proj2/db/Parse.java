@@ -4,9 +4,11 @@ package db;
 import javafx.scene.control.Tab;
 
 import javax.xml.crypto.Data;
+import java.lang.reflect.Array;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.*;
 
 /**
  * Created by Xiao Shi on 2017/4/21.
@@ -58,11 +60,11 @@ public class Parse {
         } else if ((m = LOAD_CMD.matcher(query)).matches()) {
             return loadTable(m.group(1), db);
         } else if ((m = STORE_CMD.matcher(query)).matches()) {
-            storeTable(m.group(1));
+            return storeTable(m.group(1), db);
         } else if ((m = DROP_CMD.matcher(query)).matches()) {
             return dropTable(m.group(1), db);
         } else if ((m = INSERT_CMD.matcher(query)).matches()) {
-            insertRow(m.group(1));
+            return insertRow(m.group(1), db);
         } else if ((m = PRINT_CMD.matcher(query)).matches()) {
             return printTable(m.group(1), db);
         } else if ((m = SELECT_CMD.matcher(query)).matches()) {
@@ -114,31 +116,47 @@ public class Parse {
 
     private static String loadTable(String name, Database db) {
         Table t = new Table(name);
-        db.addTable(name, t);
+        db.addTableByName(name, t);
         return "";
     }
 
-    private static void storeTable(String name) {
-        System.out.printf("You are trying to store the table named %s\n", name);
+    private static String storeTable(String name, Database db) {
+        try {
+            Table t = db.selectTableByName(name);
+            t.saveTableToFile(name);
+            System.out.println("Sucessfully store the table " + name);
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e);
+        }
+            return "";
     }
 
     private static String dropTable(String name, Database db) {
         try {
             db.selectTableByName(name);
-            db.
+            db.removeTableByName(name);
+            System.out.println("Successfully drop the table " + name);
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e);
         }
-        db.remove(name);
-        System.out.printf("You are trying to drop the table named %s\n", name);
+        return "";
     }
 
-    private static void insertRow(String expr) {
+    private static String insertRow(String expr, Database db) {
         Matcher m = INSERT_CLS.matcher(expr);
-        if (!m.matches()) {
-            System.err.printf("Malformed insert: %s\n", expr);
-            return;
+        String table_name = m.group(1);
+        String [] value_lst = m.group(2).split(",");
+        List<String> row_str = new ArrayList<String>(Arrays.asList(value_lst));
+        ArrayList<MSQContainer> row_ctn = new ArrayList<>();
+        for (String s : row_str) {
+            row_ctn.add(new MSQContainer(s));
         }
-
-        System.out.printf("You are trying to insert the row \"%s\" into the table %s\n", m.group(2), m.group(1));
+        try {
+            db.selectTableByName("table_name").rowAdd(row_ctn);
+        } catch (RuntimeException e) {
+            System.out.println ("Error: " + e);
+        }
+        return "";
     }
 
     public static String testPrintTable(String name, Database db) {
@@ -147,7 +165,6 @@ public class Parse {
 
     private static String printTable(String name, Database db) {
         Table t = db.selectTableByName(name);
-        //System.out.print(t.toString());
         return t.toString();
     }
 

@@ -3,8 +3,10 @@ package db;
 import edu.princeton.cs.introcs.In;
 
 import java.io.IOError;
+import java.io.IOException;
 import java.util.*;
-
+import java.io.FileWriter;
+import java.io.File;
 
 
 /**
@@ -83,6 +85,15 @@ public class Table {
         }
     }
 
+    /* get the MSQColname instance given a string name (the name is without the coltype expr */
+    public MSQColName getColNameByName (String title_name_no_type) {
+        for (MSQColName k : title.keySet()) {
+            if (title_name_no_type == k.getTitleName()) {
+                return k;
+            }
+        } throw new RuntimeException("Must select a title from the table, not a title you made up.");
+    }
+
     /* return a column selected by its column title,
 *  raise an error if the given title name is not in the table*/
     public ArrayList<MSQContainer> columnGet (String title_name) {
@@ -136,6 +147,11 @@ public class Table {
         if (to_check.size() < std) {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
+            for (MSQContainer k : to_check) {
+                if (! k.getRealType().equals(col_type)) {
+                    throw new RuntimeException("the column does not have correct type");
+                }
+            }
             for (int i = 0; i < discranpcy; i += 1) {
                 MSQContainer nothing = new MSQContainer("", col_type);
                 to_check.add(nothing);
@@ -155,8 +171,14 @@ public class Table {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
             ArrayList<MSQColName> title_key_lst = new ArrayList<>(t_k);
+            // check if the added in row is the tight type
+            for (int index = 0; index < to_check_size; index += 1) {
+                if (! to_check.get(index).getRealType().equals(title_key_lst.get(index).getColType())) {
+                    throw new RuntimeException("added in row must be the right type");
+                }
+            }
             for (int i = 0; i < discranpcy; i += 1) {
-                String col_type = title_key_lst.get(i).getColType();
+                String col_type = title_key_lst.get(to_check_size + i).getColType();
                 MSQContainer nothing = new MSQContainer("", col_type);
                 to_check.add(nothing);
             }
@@ -230,6 +252,7 @@ public class Table {
     /* add a row to the end of body
     *  if the row's length is not equal to the body, leave the rest in blank */
     void rowAdd(ArrayList<MSQContainer> row){
+
         checkRowSize(row, getColumnNum(), this.title.keySet());
         body.add(row);
     }
@@ -271,6 +294,18 @@ public class Table {
 
         Table copy_table = new Table(new_name, copy_title, copy_body);
         return copy_table;
+    }
+
+    public void saveTableToFile(String file_name) {
+        try {
+            File file = new File(path + file_name + prefix);
+            FileWriter file_writer = new FileWriter(file);
+            file_writer.write(toString());
+            file_writer.flush();
+            file_writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException("error with create file " + file_name);
+        }
     }
 
     /* repr of the whole table*/

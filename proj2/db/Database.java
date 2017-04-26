@@ -18,15 +18,24 @@ public class Database {
     }
 
     public Table selectTableByName(String table_name) {
-        return table_record.get(table_name);
+        try
+        {
+            return table_record.get(table_name);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Cannot find table name: " + table_name);
+        }
     }
 
     public void removeTableByName(String table_name) {
-        if (table_record.containsKey(table_name))
-        table_record.remove(table_name);
+        if (table_record.containsKey(table_name)) {
+            table_record.remove(table_name);
+        } else {
+            throw new RuntimeException("Cannot find table name: "  + table_name);
+        }
     }
 
-    public void addTable(String name, Table t) {
+    public void addTableByName(String name, Table t) {
         table_record.put(name,t);
     }
+
 }

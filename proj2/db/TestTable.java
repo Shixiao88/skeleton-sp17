@@ -106,8 +106,6 @@ public class TestTable {
         assertEquals(prt, table_for_prt.toString());
     }
 
-
-
     @Test
     public void TestCopy() {
         Table target = new Table("target", "t1");
@@ -118,6 +116,15 @@ public class TestTable {
         assertNotEquals(target.getbody(), copy.getbody());
         copy.rowDel(0);
         assertEquals(target.getRowNum()-1, copy.getRowNum());
+    }
+
+    @Test
+    public void TestSaveToFile() {
+        Table t = new Table("test");
+        t.saveTableToFile("copy_test");
+
+        Table t1 = new Table("t1");
+        t1.saveTableToFile("copy_test");
     }
 
     @Rule

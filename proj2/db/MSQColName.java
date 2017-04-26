@@ -18,7 +18,7 @@ public class MSQColName {
     private final Pattern _COLTITLE = Pattern.compile("([a-zA-z]:?\\w*)\\s+(\\w+)");
     private ArrayList<String> ColTypePattern = new ArrayList<>(Arrays.asList("string", "int", "float"));
 
-    public MSQColName (String col_name) {
+    MSQColName (String col_name) {
         Matcher m;
         if ((m = _COLTITLE.matcher(col_name)).matches() &&
                 (ColTypePattern.contains(m.group(2)))) {
@@ -68,7 +68,6 @@ public class MSQColName {
         }
         return;
     }
-
 
     public ArrayList<MSQContainer> add(Table t_self, MSQColName other, Table t_other, MSQColName new_col) {
         ArrayList<MSQContainer> column_self = t_self.columnGet(this.getValue());
