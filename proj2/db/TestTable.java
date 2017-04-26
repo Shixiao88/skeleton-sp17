@@ -69,30 +69,31 @@ public class TestTable {
         assertEquals("NOVALUE", table.getbody().get(4).get(5).toString());
 
         /* test method COLUMNDEL()*/
-        System.out.println(table.gettitle());
+        //System.out.println(table.gettitle());
         table.columnDel("T string");
         assertEquals(5, table.getColumnNum());
         assertEquals(4, table.getTitleIndex("Newcol int"));
 
         /* test method ROWADD() */
         ArrayList<MSQContainer> row = new ArrayList<>();
-        row.add(new MSQContainer("'MNS'", "string"));
+        System.out.println(table);
         row.add(new MSQContainer("2017", "int"));
+        row.add(new MSQContainer("10", "int"));
         table.rowAdd(row);
         assertEquals(13, table.getRowNum());
-        assertEquals("'MNS'", table.getbody().get(12).get(0).toString());
+        assertEquals("2017", table.getbody().get(12).get(0).toString());
         assertEquals("NOVALUE", table.getbody().get(12).get(3).toString());
 
         /* test method ROWADD() with index */
         ArrayList<MSQContainer> row2 = new ArrayList<>();
-        row2.add(new MSQContainer("'MNS2'", "string"));
         row2.add(new MSQContainer("2018", "int"));
+        row2.add(new MSQContainer("2", "int"));
         table.rowAdd(row2, 0);
         assertEquals(14, table.getRowNum());
 //        System.out.print(table.gettitle());
 //        System.out.print(table.getbody());
-        assertEquals("'MNS2'", table.getbody().get(0).get(0).toString());
-        assertEquals("2018", table.getbody().get(0).get(1).toString());
+        assertEquals("2018", table.getbody().get(0).get(0).toString());
+        assertEquals("2", table.getbody().get(0).get(1).toString());
         assertEquals("NOVALUE", table.getbody().get(0).get(2).toString());
 
         /* test method ROWDEL() with row index */
@@ -148,6 +149,18 @@ public class TestTable {
 //        ele.add(0, first);
         table.rowAdd(ele);
     }
+
+    @Test
+    public void TestExceptionCallColumnAddRowAddMalType() throws Exception {
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage("added in row must be the right type");
+        Table t = new Table("t1");
+        ArrayList<MSQContainer> row = new ArrayList<>();
+        row.add(new MSQContainer("2"));
+        row.add(new MSQContainer("'s'"));
+        t.rowAdd(row);
+    }
+
 
     @Test
     public void TestExceptionsCallColumnDel() throws Exception {

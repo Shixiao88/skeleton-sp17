@@ -2,6 +2,7 @@ package db;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -17,7 +18,7 @@ public class Main {
         Database db = new Database();
         System.out.print(PROMPT);
 
-        String line = "";
+        String line;
         while ((line = in.readLine()) != null) {
             if (EXIT.equals(line)) {
                 break;

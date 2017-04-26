@@ -167,12 +167,14 @@ public class Table {
     *  - if the added in element is too long, raise an error
     *  - else do nothing */
     private void checkRowSize(ArrayList<MSQContainer> to_check, int std, Set<MSQColName> t_k) {
-        if (to_check.size() < std) {
+        if (to_check.size() <= std) {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
             ArrayList<MSQColName> title_key_lst = new ArrayList<>(t_k);
             // check if the added in row is the tight type
             for (int index = 0; index < to_check_size; index += 1) {
+                String t = to_check.get(index).getRealType();
+                String t1 = title_key_lst.get(index).getColType();
                 if (! to_check.get(index).getRealType().equals(title_key_lst.get(index).getColType())) {
                     throw new RuntimeException("added in row must be the right type");
                 }
@@ -252,7 +254,6 @@ public class Table {
     /* add a row to the end of body
     *  if the row's length is not equal to the body, leave the rest in blank */
     void rowAdd(ArrayList<MSQContainer> row){
-
         checkRowSize(row, getColumnNum(), this.title.keySet());
         body.add(row);
     }

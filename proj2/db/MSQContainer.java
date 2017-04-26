@@ -101,6 +101,7 @@ public class MSQContainer {
         }
     }
 
+
     public MSQOperable minus(MSQOperable oprl) {
         try {
             MSQOperable res = contains_element.minus(oprl);

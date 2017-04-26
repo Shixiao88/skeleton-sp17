@@ -56,7 +56,7 @@ public class Parse {
     private static String eval(String query, Database db) {
         Matcher m;
         if ((m = CREATE_CMD.matcher(query)).matches()) {
-            return createTable(m.group(1));
+            return createTable(m.group(1), db);
         } else if ((m = LOAD_CMD.matcher(query)).matches()) {
             return loadTable(m.group(1), db);
         } else if ((m = STORE_CMD.matcher(query)).matches()) {
@@ -76,7 +76,7 @@ public class Parse {
     }
 
 
-    private static String createTable(String expr) {
+    private static String createTable(String expr, Database db) {
         Matcher m;
         if ((m = CREATE_NEW.matcher(expr)).matches()) {
             createNewTable(m.group(1), m.group(2).split(COMMA));
@@ -89,6 +89,7 @@ public class Parse {
     }
 
     private static String createNewTable(String name, String[] cols) {
+
         StringJoiner joiner = new StringJoiner(", ");
         for (int i = 0; i < cols.length-1; i++) {
             joiner.add(cols[i]);
@@ -124,7 +125,7 @@ public class Parse {
         try {
             Table t = db.selectTableByName(name);
             t.saveTableToFile(name);
-            System.out.println("Sucessfully store the table " + name);
+            System.out.println("Successfully store the table " + name);
         } catch (RuntimeException e) {
             System.out.println("Error: " + e);
         }
@@ -142,17 +143,24 @@ public class Parse {
         return "";
     }
 
+    public static String TestInsertRow(String expr, Database db) {
+        return insertRow(expr, db);
+    }
+
     private static String insertRow(String expr, Database db) {
         Matcher m = INSERT_CLS.matcher(expr);
+        if (!m.matches()) {
+            throw new RuntimeException("Malformed insert: " + expr);
+        }
         String table_name = m.group(1);
-        String [] value_lst = m.group(2).split(",");
+        String[] value_lst = m.group(2).split(",");
         List<String> row_str = new ArrayList<String>(Arrays.asList(value_lst));
         ArrayList<MSQContainer> row_ctn = new ArrayList<>();
         for (String s : row_str) {
             row_ctn.add(new MSQContainer(s));
         }
         try {
-            db.selectTableByName("table_name").rowAdd(row_ctn);
+            db.selectTableByName(table_name).rowAdd(row_ctn);
         } catch (RuntimeException e) {
             System.out.println ("Error: " + e);
         }
