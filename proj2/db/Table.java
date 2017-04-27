@@ -165,20 +165,19 @@ public class Table {
         if (to_check.size() < std) {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
-            for (MSQContainer k : to_check) {
-                if (k.getContainedElement() instanceof MSQNan ||
-                        k.getContainedElement() instanceof MSQNovalue) {
-                    k.getContainedElement().setType(col_type);
-                } else if (! k.getRealType().equals(col_type)) {
-                    throw new RuntimeException("added in column must be the right type");
-                }
-            }
+
             for (int i = 0; i < discranpcy; i += 1) {
                 MSQContainer nothing = new MSQContainer("", col_type);
                 to_check.add(nothing);
             }
-        } else if (to_check.size() > std) {
-            throw new RuntimeException("the added element is too long!");
+        }
+        for (MSQContainer k : to_check) {
+            if (k.getContainedElement() instanceof MSQNan ||
+                    k.getContainedElement() instanceof MSQNovalue) {
+                k.getContainedElement().setType(col_type);
+            } else if (! k.getRealType().equals(col_type)) {
+                throw new RuntimeException("added in column must be the right type");
+            }
         }
     }
 
@@ -224,16 +223,22 @@ public class Table {
     void columnAdd(String title_name, ArrayList<MSQContainer> col) {
         String col_type = new MSQColName(title_name).getColType();
         checkColSize(col, body.size(), col_type);
-        titleAdd(title_name);
         try {
             int index = getTitleIndex(title_name);
-            for (int i = 0; i < getRowNum(); i += 1) {
+            for (int i = 0; i < col.size(); i += 1) {
                 body.get(i).set(index,col.get(i));
             }
         }
         catch (RuntimeException e) {
-            for (int i = 0; i < getRowNum(); i += 1) {
-                body.get(i).add(col.get(i));
+            titleAdd(title_name);
+            for (int i = 0; i < col.size(); i += 1) {
+                if (body.size() == 0) {
+                    body.get(i).add(col.get(i));
+                } else {
+                    ArrayList<MSQContainer> line = new ArrayList<>();
+                    line.add(col.get(i));
+                    body.add(line);
+                }
             }
         }
     }

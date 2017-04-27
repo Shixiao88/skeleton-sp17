@@ -53,7 +53,7 @@ public class TestDatabase {
          **/
         System.out.println(Parse.testSelect("* from t1,t2,t4", db));
 
-        // sekect certain columns from one table
+        // select certain columns from one table
         System.out.println(Parse.testSelect("T from test", db));
 
         // select certain column from tables

@@ -220,13 +220,15 @@ public class Parse {
         } else {
             ArrayList<Table> table_selected = new ArrayList<>();
             for (Table t: ins_tables) {
-                Table temp = new Table("temp");
+                Table temp = new Table("temp", new HashMap<MSQColName, Integer>(),
+                        new ArrayList<ArrayList<MSQContainer>>());
                 for (String title_real_name : slc_titles) {
                     try {
                         String title_full_name = t.getFullTitleNameByRealName(title_real_name);
                         temp.columnAdd(title_full_name, t.columnGet(title_full_name));
                     } catch (RuntimeException e) { }
-                } table_selected.add(temp);
+                    table_selected.add(temp);
+                }
             }
             Table join_temp  = Join.join("join_temp", table_selected);
             return join_temp.toString();
