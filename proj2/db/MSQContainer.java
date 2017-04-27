@@ -15,7 +15,8 @@ public class MSQContainer {
     private static final Pattern _STRING = Pattern.compile("^\\'(\\w+)\\'$"),
                                  _INT = Pattern.compile("[-]?\\d+"),
                                  _FLOAT = Pattern.compile("[-]?\\d*.\\d+|[-]?\\d+.\\d*"),
-                                 _NOVALUE = Pattern.compile("");
+                                 _NOVALUE = Pattern.compile("\\s*|NOVALUE"),
+                                 _NAN = Pattern.compile("NAN");
 
 
     /* constructor of the string format, will detect the format of the string and decide if it is a
@@ -40,6 +41,9 @@ public class MSQContainer {
         } else if (_NOVALUE.matcher(format).matches()) {
             contains_element = new MSQNovalue();
             contains_element.setType(coltype);
+        } else if (_NAN.matcher(format).matches()) {
+            contains_element = new MSQNan();
+            contains_element.setType(coltype);
         } else {
             throw new RuntimeException("the column's type is not matching what the column contains.");
         }
@@ -62,10 +66,11 @@ public class MSQContainer {
             contains_element = new MSQInt(format);
         } else if (_FLOAT.matcher(format).matches() ) {
             contains_element = new MSQFloat(format);
+        } else if (format_no_space.length() == 0) {
+            contains_element = new MSQNovalue();
         } else {
             throw new RuntimeException("Malformed literal");
         }
-
     }
 
     /* helper method for the string format, to delete all the spaces and return the list of string */

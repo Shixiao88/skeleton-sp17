@@ -108,11 +108,38 @@ public class TestTable {
     }
 
     @Test
+    /* I made a real mistake to add all the test into one big giant method, this is very not flexible if I want to
+    * add in more methods, fortunatly I do others in small pieces */
+    public void TestRowAddEmptyElInMiddle() {
+        Table t = new Table("test");
+        ArrayList<MSQContainer> row = new ArrayList<>();
+        row.add(new MSQContainer(""));
+        row.add(new MSQContainer("2017"));
+        t.rowAdd(row);
+        assertEquals(13, t.getRowNum());
+        assertEquals("string", t.getbody().get(12).get(0).getRealType());
+        assertEquals("int", t.getbody().get(12).get(4).getRealType());
+    }
+
+    public void TestColAddEmptyElInMiddle() {
+        Table t = new Table("test");
+        ArrayList<MSQContainer> col = new ArrayList<>();
+        col.add(new MSQContainer("111"));
+        col.add(new MSQContainer(""));
+        col.add(new MSQContainer("2017"));
+        t.columnAdd("title int", col);
+        assertEquals(6, t.getColumnNum());
+        assertEquals("int", t.getbody().get(0).get(6).getRealType());
+        assertEquals("int", t.getbody().get(1).get(6).getRealType());
+    }
+
+    @Test
     public void TestCopy() {
-        Table target = new Table("target", "t1");
+        Table target = new Table("target", "test");
         Table copy = target.copy("copy");
         assertEquals(target.getRowNum(), copy.getRowNum());
         assertEquals(target.getColumnNum(), copy.getColumnNum());
+        assertEquals(target.toString(), copy.toString());
         assertNotEquals(target.gettitle(), copy.gettitle());
         assertNotEquals(target.getbody(), copy.getbody());
         copy.rowDel(0);
@@ -151,7 +178,7 @@ public class TestTable {
     }
 
     @Test
-    public void TestExceptionCallColumnAddRowAddMalType() throws Exception {
+    public void TestExceptionCallRowAddMalType() throws Exception {
         expectedEx.expect(RuntimeException.class);
         expectedEx.expectMessage("added in row must be the right type");
         Table t = new Table("t1");
@@ -161,6 +188,16 @@ public class TestTable {
         t.rowAdd(row);
     }
 
+    @Test
+    public void TestExceptionCallColAddMalType() throws Exception {
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage("added in column must be the right type");
+        Table t = new Table("t1");
+        ArrayList<MSQContainer> col = new ArrayList<>();
+        col.add(new MSQContainer("2"));
+        col.add(new MSQContainer("'s'"));
+        t.columnAdd("title int", col);
+    }
 
     @Test
     public void TestExceptionsCallColumnDel() throws Exception {

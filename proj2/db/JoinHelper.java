@@ -93,10 +93,12 @@ public class JoinHelper {
             MSQColName k = keys.get(i);
             ArrayList<MSQContainer> col1 = t1.columnGet(k.getValue());
             ArrayList<MSQContainer> col2 = t2.columnGet(k.getValue());
-            for (int l = 0; l < l1.size(); l += 1) {
-                if (! col1.get(l1.get(l)).toString().equals(col2.get(l2.get(l)).toString())) {
-                    l1.remove(l);
-                    l2.remove(l);
+            ArrayList<Integer> l1_copy = new ArrayList<>(l1);
+            ArrayList<Integer> l2_copy = new ArrayList<>(l2);
+            for (int l = 0; l < l1_copy.size(); l += 1) {
+                if (! col1.get(l1_copy.get(l)).toString().equals(col2.get(l2_copy.get(l)).toString())) {
+                    l1.remove(l1_copy.get(l));
+                    l2.remove(l2_copy.get(l));
                 }
             }
         }

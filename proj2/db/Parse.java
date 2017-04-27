@@ -68,7 +68,7 @@ public class Parse {
         } else if ((m = PRINT_CMD.matcher(query)).matches()) {
             return printTable(m.group(1), db);
         } else if ((m = SELECT_CMD.matcher(query)).matches()) {
-            select(m.group(1));
+            return select(m.group(1), db);
         } else {
             System.err.printf("Malformed query: %s\n", query);
         }
@@ -79,7 +79,7 @@ public class Parse {
     private static String createTable(String expr, Database db) {
         Matcher m;
         if ((m = CREATE_NEW.matcher(expr)).matches()) {
-            createNewTable(m.group(1), m.group(2).split(COMMA));
+            createNewTable(m.group(1), m.group(2).split(COMMA), db);
         } else if ((m = CREATE_SEL.matcher(expr)).matches()) {
             createSelectedTable(m.group(1), m.group(2), m.group(3), m.group(4));
         } else {
@@ -88,16 +88,18 @@ public class Parse {
         return "";
     }
 
-    private static String createNewTable(String name, String[] cols) {
+    public static String testCreateNewTable(String name, String[] cols, Database db) {
+        return createNewTable(name, cols, db);
+    }
 
-        StringJoiner joiner = new StringJoiner(", ");
-        for (int i = 0; i < cols.length-1; i++) {
-            joiner.add(cols[i]);
+    private static String createNewTable(String name, String[] cols, Database db) {
+        Map<MSQColName, Integer> t= new HashMap<>();
+        for (int i = 0; i < cols.length; i++) {
+            t.put(new MSQColName(cols[i]), i);
         }
-
-        String colSentence = joiner.toString() + " and " + cols[cols.length-1];
-        System.out.printf("You are trying to create a table named %s with the columns %s\n", name, colSentence);
-        return "";
+        Table table = new Table(name, t, null);
+        db.addTableByName(name, table);
+        return "Susseccfully create the table name: " + name;
     }
 
     private static void createSelectedTable(String name, String exprs, String tables, String conds) {
@@ -172,22 +174,68 @@ public class Parse {
     }
 
     private static String printTable(String name, Database db) {
-        Table t = db.selectTableByName(name);
-        return t.toString();
+        try {
+            Table t = db.selectTableByName(name);
+            return t.toString();
+        } catch (NullPointerException e) {
+            System.out.println ("Error: cannot find the table " + name);
+        } catch (RuntimeException e) {
+            System.out.println ("Error: " + e);
+        }
+        return "";
     }
 
-    private static void select(String expr) {
+    public static String testSelect(String expr, Database db) {
+        return select(expr, db);
+    }
+
+
+    private static String select(String expr, Database db) {
         Matcher m = SELECT_CLS.matcher(expr);
         if (!m.matches()) {
             System.err.printf("Malformed select: %s\n", expr);
-            return;
+            return "";
         }
+        String slc_titles = m.group(1);
+        String table_name = m.group(2);
+        String cond = m.group(3);
+        if (cond == null) {
+            return selectNoCond(slc_titles, table_name, db);
+        }
+            return selectCond(slc_titles, table_name, cond, db);
 
-        select(m.group(1), m.group(2), m.group(3));
     }
 
-    private static void select(String exprs, String tables, String conds) {
+    private static String selectNoCond(String exprs, String tables, Database db) {
+        String[] slc_titles = exprs.split(",");
+        String[] slc_tables = tables.split(",");
+        ArrayList<Table> ins_tables = new ArrayList<>();
+        for (int i = 0; i < slc_tables.length; i += 1) {
+            ins_tables.add(db.selectTableByName(slc_tables[i]));
+        }
+        // the case select "*" from the given table(s)
+        if (slc_titles.length == 1 && slc_titles[0].equals("*")) {
+            Table res = Join.join("temp", ins_tables);
+            return res.toString();
+        } else {
+            ArrayList<Table> table_selected = new ArrayList<>();
+            for (Table t: ins_tables) {
+                Table temp = new Table("temp");
+                for (String title_real_name : slc_titles) {
+                    try {
+                        String title_full_name = t.getFullTitleNameByRealName(title_real_name);
+                        temp.columnAdd(title_full_name, t.columnGet(title_full_name));
+                    } catch (RuntimeException e) { }
+                } table_selected.add(temp);
+            }
+            Table join_temp  = Join.join("join_temp", table_selected);
+            return join_temp.toString();
+        }
+    }
+
+    private static String selectCond(String exprs, String tables, String conds, Database db) {
         System.out.printf("You are trying to select these expressions:" +
                 " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", exprs, tables, conds);
+        return "";
     }
 }

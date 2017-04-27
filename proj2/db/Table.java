@@ -55,6 +55,14 @@ public class Table {
         return this.name;
     }
 
+    String getFullTitleNameByRealName (String title_real_name) {
+        for (MSQColName c : title.keySet()) {
+            if (title_real_name.equals(c.getTitleName())) {
+                return c.getValue();
+            }
+        } return null;
+    }
+
     Map<MSQColName, Integer> gettitle() { return this.title; }
 
     ArrayList<ArrayList<MSQContainer>> getbody() {
@@ -111,6 +119,16 @@ public class Table {
         }
     }
 
+    /* the parameter is the first word of the title, I.E. title "X int", it will only pass "X"*/
+    public ArrayList<MSQContainer> columnGetbyRealName (String title_name) {
+        try {
+            String title_full_name = getFullTitleNameByRealName(title_name);
+            return columnGet(title_full_name);
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Must select a title from the table, not a title you made up.");
+        }
+    }
+
     /* must do the copy to every instance that the table contains, not only copy the address */
     public ArrayList<MSQContainer> rowGet (int row_index) {
         try {
@@ -148,8 +166,11 @@ public class Table {
             int to_check_size = to_check.size();
             int discranpcy = std - to_check_size;
             for (MSQContainer k : to_check) {
-                if (! k.getRealType().equals(col_type)) {
-                    throw new RuntimeException("the column does not have correct type");
+                if (k.getContainedElement() instanceof MSQNan ||
+                        k.getContainedElement() instanceof MSQNovalue) {
+                    k.getContainedElement().setType(col_type);
+                } else if (! k.getRealType().equals(col_type)) {
+                    throw new RuntimeException("added in column must be the right type");
                 }
             }
             for (int i = 0; i < discranpcy; i += 1) {
@@ -174,8 +195,15 @@ public class Table {
             // check if the added in row is the tight type
             for (int index = 0; index < to_check_size; index += 1) {
                 String t = to_check.get(index).getRealType();
+
                 String t1 = title_key_lst.get(index).getColType();
-                if (! to_check.get(index).getRealType().equals(title_key_lst.get(index).getColType())) {
+                MSQContainer ctn = to_check.get(index);
+                // to deal with the insert in row is NOVALUE or NaN
+                if (ctn.getContainedElement() instanceof MSQNovalue ||
+                        ctn.getContainedElement() instanceof MSQNan) {
+                    String col_type = title_key_lst.get(index).getColType();
+                    ctn.getContainedElement().setType(col_type);
+                } else if (! to_check.get(index).getRealType().equals(title_key_lst.get(index).getColType())) {
                     throw new RuntimeException("added in row must be the right type");
                 }
             }
@@ -283,6 +311,7 @@ public class Table {
         ArrayList<ArrayList<MSQContainer>> copy_body  = new ArrayList<>();
         for (int row=0; row < getRowNum(); row += 1){
             ArrayList<MSQContainer> line = new ArrayList<>();
+            ArrayList<MSQContainer> r = rowGet(row);
             line.addAll(rowGet(row));
             copy_body.add(line);
         }
@@ -313,18 +342,21 @@ public class Table {
     public String toString() {
         StringJoiner title_joiner = new StringJoiner(",");
         String output = "";
-        for (MSQColName n : title.keySet()) {
-            title_joiner.add(n.toString());
-        }
-        output += title_joiner.toString();
-        for (ArrayList<MSQContainer> l : body) {
-            StringJoiner ctn_joiner = new StringJoiner(",");
-            for (MSQContainer ctn : l) {
-                ctn_joiner.add(ctn.toString());
+        try {
+            for (MSQColName n : title.keySet()) {
+                title_joiner.add(n.toString());
             }
-            output += "\n";
-            output += ctn_joiner.toString();
-        }
+            output += title_joiner.toString();
+
+            for (ArrayList<MSQContainer> l : body) {
+                StringJoiner ctn_joiner = new StringJoiner(",");
+                for (MSQContainer ctn : l) {
+                    ctn_joiner.add(ctn.toString());
+                }
+                output += "\n";
+                output += ctn_joiner.toString();
+            }
+        } catch (NullPointerException e) { }
         return output;
 
     }

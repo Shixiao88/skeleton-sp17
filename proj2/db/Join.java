@@ -1,4 +1,5 @@
 package db;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -29,5 +30,13 @@ public class Join {
                 return res;
             }
         }
+    }
+
+    public static Table join (String join_name, ArrayList<Table> table_list) {
+        Table temp = table_list.get(0).copy("temp");
+        for (Table t : table_list) {
+            temp = join("temp", temp, t);
+        }
+        return temp;
     }
 }

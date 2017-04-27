@@ -37,7 +37,7 @@ public class MSQString extends MSQOperable {
 
     @Override
     public MSQString copy() {
-        return new MSQString(Value);
+        return new MSQString(toString());
     }
 
     @Override
