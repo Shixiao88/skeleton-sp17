@@ -53,8 +53,13 @@ public class MSQString extends MSQOperable {
         if (other instanceof MSQNan) {
             return other.add(this);
         } else if (other.getType().equals("string")) {
-            String res = "'" + getOprValue() + " " + other.getOprValue() + "'";
-            return new MSQString(res);
+            if (other.getOprValue().equals("")){
+                String res = "'" + getOprValue() + other.getOprValue() + "'";
+                return new MSQString(res);
+            } else {
+                String res = "'" + getOprValue() + " " + other.getOprValue() + "'";
+                return new MSQString(res);
+            }
         } else {
             throw new RuntimeException("String can only add to string");
         }

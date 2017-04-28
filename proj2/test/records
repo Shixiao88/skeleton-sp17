@@ -1,4 +1,4 @@
-T string,S int,W int,L int,T int
+TeamName string,Season int,Wins int,Losses int,Ties int
 'Golden Bears',2016,5,7,0
 'Golden Bears',2015,8,5,0
 'Golden Bears',2014,5,7,0

@@ -89,7 +89,7 @@ public class Table {
         if (titleIn(name)) {
             return titleGet(name);
         } else {
-            throw new RuntimeException("the given title is not in the table.");
+            throw new RuntimeException("the given title is not in the table. " + name);
         }
     }
 
@@ -114,8 +114,7 @@ public class Table {
             }
             return col;
         } catch (RuntimeException e) {
-            System.out.print("Must select a title from the table, not a title you made up.");
-            return null;
+            throw new RuntimeException("Must select a title from the table, not a title you made up.");
         }
     }
 
@@ -232,9 +231,10 @@ public class Table {
         catch (RuntimeException e) {
             titleAdd(title_name);
             for (int i = 0; i < col.size(); i += 1) {
-                if (body.size() == 0) {
+                try {
+                    getbody();
                     body.get(i).add(col.get(i));
-                } else {
+                } catch (IndexOutOfBoundsException e1) {
                     ArrayList<MSQContainer> line = new ArrayList<>();
                     line.add(col.get(i));
                     body.add(line);

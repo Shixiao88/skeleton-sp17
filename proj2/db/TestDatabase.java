@@ -30,6 +30,11 @@ public class TestDatabase {
         System.out.println(print_res);
     }
 
+    public void TestCreateSelectTable() {
+        Database db = new Database();
+        Parse.testLoadTable("test", db);
+    }
+
     @Test
     public void TestInsertRow() {
         Database db = new Database();

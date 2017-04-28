@@ -60,14 +60,16 @@ public class MSQContainer {
     MSQContainer (String format) {
         Matcher m;
         String format_no_space = delSpaces(format);
-        if ((m = _STRING.matcher(format)).matches()) {
+        if ((m = _STRING.matcher(format_no_space)).matches()) {
             contains_element = new MSQString(format);
-        } else if ((m=_INT.matcher(format)).matches()) {
+        } else if ((m =_INT.matcher(format)).matches()) {
             contains_element = new MSQInt(format);
         } else if (_FLOAT.matcher(format).matches() ) {
             contains_element = new MSQFloat(format);
-        } else if (format_no_space.length() == 0) {
+        } else if (format_no_space.length() == 0 || format_no_space.equals("NOVALUE")) {
             contains_element = new MSQNovalue();
+        } else if (format_no_space.equals("NAN")) {
+            contains_element = new MSQNan();
         } else {
             throw new RuntimeException("Malformed literal");
         }

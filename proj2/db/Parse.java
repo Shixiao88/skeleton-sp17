@@ -81,7 +81,7 @@ public class Parse {
         if ((m = CREATE_NEW.matcher(expr)).matches()) {
             createNewTable(m.group(1), m.group(2).split(COMMA), db);
         } else if ((m = CREATE_SEL.matcher(expr)).matches()) {
-            createSelectedTable(m.group(1), m.group(2), m.group(3), m.group(4));
+            createSelectedTable(m.group(1), m.group(2), m.group(3), m.group(4), db);
         } else {
             System.err.printf("Malformed create: %s\n", expr);
         }
@@ -102,15 +102,28 @@ public class Parse {
         return "Susseccfully create the table name: " + name;
     }
 
-    private static void createSelectedTable(String name, String exprs, String tables, String conds) {
-        /* name is the table name
-        *  exprs is comma split
-        *  tables is comma split
-        *  cons is and split
-        *  */
+//    public static String TestCreateSelectedTable(String name, String exprs, String tables, String conds, Database db) {
+//        return createSelectedTable(name, exprs, tables, conds, db);
+//    }
+//    private static String createSelectedTable(String name, String exprs, String tables, String conds, Database db) {
+//        /* name is the table name
+//        *  exprs is comma split
+//        *  tables is comma split
+//        *  cons is and split
+//        *  */
+//
+//        if (conds == null) {
+//            Table t = selectNoCond(exprs, tables, db);
+//            db.addTableByName(name, t);
+//        }
+//
+//    return "";
+//    }
 
+    private static String createSelectedTable(String name, String exprs, String tables, String conds, Database db) {
         System.out.printf("You are trying to create a table named %s by selecting these expressions:" +
                 " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", name, exprs, tables, conds);
+        return "";
     }
 
     public static String testLoadTable(String name, Database db) {
@@ -196,17 +209,66 @@ public class Parse {
             System.err.printf("Malformed select: %s\n", expr);
             return "";
         }
-        String slc_titles = m.group(1);
+        String slc_exprs = m.group(1);
         String table_name = m.group(2);
         String cond = m.group(3);
-        if (cond == null) {
-            return selectNoCond(slc_titles, table_name, db);
-        }
-            return selectCond(slc_titles, table_name, cond, db);
 
+        /* parse the slc_exprs
+         * column expression will be: "(<oprand><oprator><operand>)(<oprand><oprator><operand>)(<oprand><oprator><operand>)
+         * as (column1, column2, column3)"
+         */
+
+        String[] slc_and_clause = slc_exprs.split("\\a+as\\a+");
+        // it is a column expression
+        if (slc_and_clause.length == 2) {
+            String operations = slc_and_clause[0];
+            String new_cols = slc_and_clause[1];
+            return selectOprNoCond(operations, new_cols, table_name, db).toString();
+        } else {
+            if (cond == null) {
+                return selectNoOprNoCond(slc_exprs, table_name, db).toString();
+            }
+            return selectCond(slc_exprs, table_name, cond, db);
+        }
     }
 
-    private static String selectNoCond(String exprs, String tables, Database db) {
+    /* first step : to create a joint table for clause "FROM TABLE1, TABLE2, TABLE3 ... */
+    private static Table selectFromJoin(String table_name, Database db) {
+        String[] table_lst = table_name.split("\\s*,\\s*");
+        if (table_lst.length == 1) {
+            String tablename = table_lst[0];
+            return db.selectTableByName(tablename).copy(table_name + "Copy");
+        } else {
+            List<String> table_arry = new ArrayList<>(Arrays.asList(table_lst));
+            ArrayList<Table> t_ins_lst = new ArrayList<>();
+            for (String t_name : table_arry) {
+                t_ins_lst.add(db.selectTableByName(t_name));
+            }
+            Table join = Join.join("join", t_ins_lst);
+            return join;
+        }
+    }
+
+    /* second step : do the operation "COLUM1 + COLUMN2" or "COLUMN1 * LITERAL" ... */
+    private static Table selectDoOprs(String[] opr_lst, Table table, Database db) {
+        for (int i = 0; i < opr_lst.length; i += 1) {
+            String operation = opr_lst[i];
+            if (operation.contains("+")) {
+                operation.split("\\s*+\\s*");
+               //Operation.add(operation[0], operation[1], table);
+            }
+        } return null;
+    }
+
+
+    private static Table selectOprNoCond(String operations, String new_cols, String table_name, Database db) {
+        String[] operation_lst = operations.split(",");
+        String[] new_cols_lst = new_cols.split(",");
+        return null;
+    }
+
+
+    private static Table selectNoOprNoCond(String exprs, String tables, Database db) {
         String[] slc_titles = exprs.split(",");
         String[] slc_tables = tables.split(",");
         ArrayList<Table> ins_tables = new ArrayList<>();
@@ -216,7 +278,7 @@ public class Parse {
         // the case select "*" from the given table(s)
         if (slc_titles.length == 1 && slc_titles[0].equals("*")) {
             Table res = Join.join("temp", ins_tables);
-            return res.toString();
+            return res;
         } else {
             ArrayList<Table> table_selected = new ArrayList<>();
             for (Table t: ins_tables) {
@@ -231,13 +293,17 @@ public class Parse {
                 }
             }
             Table join_temp  = Join.join("join_temp", table_selected);
-            return join_temp.toString();
+            return join_temp;
         }
     }
 
     private static String selectCond(String exprs, String tables, String conds, Database db) {
-        System.out.printf("You are trying to select these expressions:" +
-                " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", exprs, tables, conds);
-        return "";
+        String[] cons_lst = conds.split("\\s+and\\s+");
+        int cond_len = cons_lst.length;
+        for (int i = 0; i < cond_len; i += 1) {
+            if (cons_lst[i].contains("+")) {
+                String[] operations = cons_lst[i].split("\\s*+\\s*");
+            }
+        } return "";
     }
 }

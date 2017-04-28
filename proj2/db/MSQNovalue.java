@@ -35,12 +35,12 @@ public class MSQNovalue extends MSQOperable{
     }
 
     public String getOprValue() {
-        if (Type == "string") {
-            return new MSQString("").getOprValue();
-        } else if (Type == "int") {
-            return new MSQInt("0").getOprValue();
-        } else if (Type == "float") {
-            return new MSQFloat("0.0").getOprValue();
+        if (Type.equals("string")) {
+            return "";
+        } else if (Type.equals("int")) {
+            return "0";
+        } else if (Type.equals("float")) {
+            return "0.0";
         }
         return null;
     }

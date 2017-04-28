@@ -30,19 +30,6 @@ public class TestMSQColName {
 
     }
 
-    @Test
-    public void TestMSQColNameAdd() {
-        Table t1 = new Table("t1");
-        Table t2 = new Table("t2");
-        ArrayList<MSQContainer> res_compare = new ArrayList<>();
-        res_compare.add(new MSQContainer("9"));
-        res_compare.add(new MSQContainer("12"));
-        res_compare.add(new MSQContainer("8"));
-        MSQColName c1 = t1.getColNameByName("y");
-        MSQColName c2 = t2.getColNameByName("z");
-        assertEquals(res_compare.toString(), (c1.add(t1,c2,t2,new MSQColName("ex"))).toString());
-
-    }
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
