@@ -12,7 +12,7 @@ public class MSQContainer {
     // the container-type will be the same as the title marked type
     private String container_type;
 
-    private static final Pattern _STRING = Pattern.compile("^\\'(\\w+)\\'$"),
+    private static final Pattern _STRING = Pattern.compile("^\\'\\S+\\'$"),
                                  _INT = Pattern.compile("[-]?\\d+"),
                                  _FLOAT = Pattern.compile("[-]?\\d*.\\d+|[-]?\\d+.\\d*"),
                                  _NOVALUE = Pattern.compile("\\s*|NOVALUE"),

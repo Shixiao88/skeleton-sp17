@@ -46,11 +46,17 @@ public class MSQNovalue extends MSQOperable{
     }
 
     @Override
+    public MSQNovalue reverseAdd() {
+        return this;
+    }
+
+    @Override
     public MSQOperable add(MSQOperable other) {
-        if (other instanceof MSQNovalue) {
-            return new MSQNovalue();
-        }
         try {
+            if (Type.equals("float")) {
+                MSQFloat f = new MSQFloat("0.000");
+                return f.add(other);
+            }
             return other.add(this);
         } catch (RuntimeException e) {
             throw new RuntimeException("malformed operation, incorrect types");
@@ -59,6 +65,10 @@ public class MSQNovalue extends MSQOperable{
 
     @Override
     public MSQOperable minus (MSQOperable other) {
-        return null;
+        try {
+            return other.reverseAdd();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("malformed operation, incorrect types");
+        }
     }
 }

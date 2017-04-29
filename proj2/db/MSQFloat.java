@@ -74,9 +74,15 @@ public class MSQFloat extends MSQOperable {
         if (other instanceof MSQNan) {
             return other.minus(this);
         } else if (other.getType().equals("float")) {
+            if (other instanceof MSQNovalue) {
+                return copy();
+            }
             MSQFloat flt_rvsd = ((MSQFloat) other).reverseAdd();
             return flt_rvsd.add(this);
         } else if (other.getType().equals("int")) {
+            if (other instanceof MSQNovalue) {
+                return copy();
+            }
             MSQInt int_rvsd = ((MSQInt) other).reverseAdd();
             return int_rvsd.add(this);
         } else {

@@ -21,7 +21,8 @@ public class Parse {
     private static final String SPACE = "\\s*",
             REST  = "\\s*(.*)\\s*",
             COMMA = "\\s*,\\s*",
-            AND   = "\\s+and\\s+";
+            AND   = "\\s+(and)\\s+",
+            AS    = "\\s+(as)\\s+";
 
     // Stage 1 syntax, contains the command name.
     private static final Pattern CREATE_CMD = Pattern.compile(SPACE + "create table " + REST),
@@ -168,7 +169,7 @@ public class Parse {
             throw new RuntimeException("Malformed insert: " + expr);
         }
         String table_name = m.group(1);
-        String[] value_lst = m.group(2).split(",");
+        String[] value_lst = m.group(2).split(COMMA);
         List<String> row_str = new ArrayList<String>(Arrays.asList(value_lst));
         ArrayList<MSQContainer> row_ctn = new ArrayList<>();
         for (String s : row_str) {
@@ -217,24 +218,22 @@ public class Parse {
          * column expression will be: "(<oprand><oprator><operand>)(<oprand><oprator><operand>)(<oprand><oprator><operand>)
          * as (column1, column2, column3)"
          */
+        // 1. deal with the clause after FROM, joint all the tables
+        Table join_table = selectTableJoin(table_name, db);
+        // 2. deal with the column operations after SELECT, might be column names and column operations.
 
-        String[] slc_and_clause = slc_exprs.split("\\a+as\\a+");
-        // it is a column expression
-        if (slc_and_clause.length == 2) {
-            String operations = slc_and_clause[0];
-            String new_cols = slc_and_clause[1];
-            return selectOprNoCond(operations, new_cols, table_name, db).toString();
-        } else {
-            if (cond == null) {
-                return selectNoOprNoCond(slc_exprs, table_name, db).toString();
-            }
-            return selectCond(slc_exprs, table_name, cond, db);
-        }
+        String[] arry_operations = slc_exprs.split(COMMA);
+        selectDoOprs(arry_operations, join_table);
+
+        // 3. deal with only column name selection, delete all the columns that doesn't mentioned in the select clause
+        selectColumns(arry_operations, join_table);
+
+        return join_table.toString();
     }
 
     /* first step : to create a joint table for clause "FROM TABLE1, TABLE2, TABLE3 ... */
-    private static Table selectFromJoin(String table_name, Database db) {
-        String[] table_lst = table_name.split("\\s*,\\s*");
+    private static Table selectTableJoin(String table_name, Database db) {
+        String[] table_lst = table_name.split(COMMA);
         if (table_lst.length == 1) {
             String tablename = table_lst[0];
             return db.selectTableByName(tablename).copy(table_name + "Copy");
@@ -249,60 +248,110 @@ public class Parse {
         }
     }
 
-    /* second step : do the operation "COLUM1 + COLUMN2" or "COLUMN1 * LITERAL" ... */
-    private static Table selectDoOprs(String[] opr_lst, Table table, Database db) {
-        for (int i = 0; i < opr_lst.length; i += 1) {
-            String operation = opr_lst[i];
-            if (operation.contains("+")) {
-                operation.split("\\s*+\\s*");
-               //Operation.add(operation[0], operation[1], table);
+    /* second step : do the operation "COLUM1 + COLUMN2 as SMTH" or "COLUMN1 * LITERAL as SMT" ...
+    *  if there is no operations inside, do nothing instead*/
+    private static void selectDoOprs(String[] opr_lst, Table table) {
+        Map<String, List<MSQContainer>> colname_col = new HashMap<>();
+        try {
+            for (int i = 0; i < opr_lst.length; i += 1) {
+                String operation = opr_lst[i];
+                if (operation.contains("+")) {
+                    String[] arry_operations = operation.split("\\s*\\+\\s*");
+                    // to see if there is the "as" column rename clause
+                    String[] rename_column_expr = arry_operations[1].split(AS);
+                    String rename = rename_column_expr[1];
+                    ArrayList<MSQContainer> one_column = Operation.add(arry_operations[0], rename_column_expr[0], table);
+                    if (rename == "") {
+                        String column_full_name = table.getFullTitleNameByRealName(arry_operations[0]);
+                        table.columnAdd(column_full_name, one_column);
+                    } else {
+                        String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
+                        table.columnAdd(rename + " " + new_column_type, one_column);
+                    }
+
+                } else if (operation.contains("-")) {
+                    String[] arry_operations = operation.split("\\s*-\\s*");
+                    // to see if there is the "as" column rename clause
+                    String[] rename_column_expr = arry_operations[1].split(AS);
+                    String rename = rename_column_expr[1];
+                    ArrayList<MSQContainer> one_column = Operation.minus(arry_operations[0], rename_column_expr[0], table);
+                    if (rename == "") {
+                        String column_full_name = table.getFullTitleNameByRealName(arry_operations[0]);
+                        table.columnAdd(column_full_name, one_column);
+                    }
+                    String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
+                    table.columnAdd(rename + " " + new_column_type, one_column);
+                }
             }
+        } catch (RuntimeException e){
+            throw new RuntimeException("Bad formed operation format: " + e);
+        }
+    }
+
+    /* helper method to decide a type of the renamed column */
+    private static String type_selection(String op1, String op2, Table table) {
+        try {
+            String op1_fullname = table.getFullTitleNameByRealName(op1);
+            String op2_fullname = table.getFullTitleNameByRealName(op2);
+            String type1 = op1_fullname.split(" ")[1];
+            String type2;
+
+            if (type1.equals("string")) {
+                return "string";
+            } else if (type1.equals("float")) {
+                return "float";
+            } else if (op2_fullname == null) {
+                type2 = new MSQContainer(op2).getRealType();
+                if ( type1.equals("int") && type2.equals( "int")) {
+                    return "int";
+                } else if (type2.equals("float")) {
+                    return "float";
+                }
+            } else {
+                type2 = op2_fullname.split(" ")[1];
+                if ( type1.equals("int") && type2.equals("int")) {
+                    return "int";
+                } else if (type2.equals("float")) {
+                    return "float";
+                }
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Bad formed column type selection");
         } return null;
     }
 
 
-    private static Table selectOprNoCond(String operations, String new_cols, String table_name, Database db) {
-        String[] operation_lst = operations.split(",");
-        String[] new_cols_lst = new_cols.split(",");
-        return null;
-    }
-
-
-    private static Table selectNoOprNoCond(String exprs, String tables, Database db) {
-        String[] slc_titles = exprs.split(",");
-        String[] slc_tables = tables.split(",");
-        ArrayList<Table> ins_tables = new ArrayList<>();
-        for (int i = 0; i < slc_tables.length; i += 1) {
-            ins_tables.add(db.selectTableByName(slc_tables[i]));
-        }
+    private static void selectColumns(String[] slc_titles, Table table) {
         // the case select "*" from the given table(s)
-        if (slc_titles.length == 1 && slc_titles[0].equals("*")) {
-            Table res = Join.join("temp", ins_tables);
-            return res;
+        if (slc_titles[0].equals("*")) {
+            // do nothing
         } else {
-            ArrayList<Table> table_selected = new ArrayList<>();
-            for (Table t: ins_tables) {
-                Table temp = new Table("temp", new HashMap<MSQColName, Integer>(),
-                        new ArrayList<ArrayList<MSQContainer>>());
-                for (String title_real_name : slc_titles) {
-                    try {
-                        String title_full_name = t.getFullTitleNameByRealName(title_real_name);
-                        temp.columnAdd(title_full_name, t.columnGet(title_full_name));
-                    } catch (RuntimeException e) { }
-                    table_selected.add(temp);
+            // filter all the AS clause, add all the real column number in the list
+            List<String> col_names = new ArrayList<>();
+            for (int i = 0; i < slc_titles.length; i += 1) {
+                String[] as_clause = slc_titles[i].split(AS);
+                if (as_clause.length > 1) {
+                    col_names.add(as_clause[1]);
+                }
+                col_names.add(as_clause[0]);
+            }
+            // iterate the table, if the title not in the list, delete the column
+            ArrayList<MSQColName> title_copy = new ArrayList<>();
+            title_copy.addAll(table.gettitle().keySet());
+            for (MSQColName k : title_copy) {
+                if (! col_names.contains(k.getTitleName())) {
+                    table.columnDel(k.getValue());
                 }
             }
-            Table join_temp  = Join.join("join_temp", table_selected);
-            return join_temp;
         }
     }
 
     private static String selectCond(String exprs, String tables, String conds, Database db) {
-        String[] cons_lst = conds.split("\\s+and\\s+");
+        String[] cons_lst = conds.split(AND);
         int cond_len = cons_lst.length;
         for (int i = 0; i < cond_len; i += 1) {
             if (cons_lst[i].contains("+")) {
-                String[] operations = cons_lst[i].split("\\s*+\\s*");
+                String[] operations = cons_lst[i].split("\\s*\\+\\s*");
             }
         } return "";
     }

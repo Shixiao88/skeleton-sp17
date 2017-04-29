@@ -1,4 +1,4 @@
-Lastname string,Firstname string,TeamName string
+LastName string,FirstName string,TeamName string
 'Lee','Maurice','Mets'
 'Lee','Maurice','Steelers'
 'Ray','Mitas','Patriots'
