@@ -121,7 +121,7 @@ public class Operation {
         String col_fullname_first = table.getFullTitleNameByRealName(first);
         String col_fullname_second = table.getFullTitleNameByRealName(second);
         if (col_fullname_first == null) {
-            throw new RuntimeException("Missing elements for add operation");
+            throw new RuntimeException("Missing elements for multiple operation");
         }
         // the second is literal
         if (col_fullname_second == null) {
@@ -148,7 +148,7 @@ public class Operation {
                 MSQContainer add_res = new MSQContainer(res);
                 result_column.add(add_res);
             } catch (RuntimeException e) {
-                throw new RuntimeException("Bad element type doing add operation");
+                throw new RuntimeException("Bad element type doing multiple operation");
             }
         }  return result_column;
     }
@@ -165,7 +165,60 @@ public class Operation {
                 MSQOperable res = o1.mul(o2);
                 return res.toString();
             } catch (RuntimeException e) {
-                throw new RuntimeException("Bad element type doing add operation");
+                throw new RuntimeException("Bad element type doing multiple operation");
+            }
+        }
+    }
+
+    public static ArrayList<MSQContainer> divide(String first, String second, Table table) {
+        String col_fullname_first = table.getFullTitleNameByRealName(first);
+        String col_fullname_second = table.getFullTitleNameByRealName(second);
+        if (col_fullname_first == null) {
+            throw new RuntimeException("Missing elements for divide operation");
+        }
+        // the second is literal
+        if (col_fullname_second == null) {
+            MSQContainer second_ctn = new MSQContainer(second);
+            ArrayList<MSQContainer> col_first_column = table.columnGet(col_fullname_first);
+            ArrayList<MSQContainer> result_column = new ArrayList<>();
+            for (MSQContainer k : col_first_column) {
+                try {
+                    String res = divide(k, second_ctn);
+                    MSQContainer add_res = new MSQContainer(res);
+                    result_column.add(add_res);
+                } catch (RuntimeException e) {
+                    throw new RuntimeException ("Bad element type doing divide operation");
+                }
+            } return result_column;
+        }
+        // the second is instance of MSQColname
+        ArrayList<MSQContainer> col_first_column = table.columnGet(col_fullname_first);
+        ArrayList<MSQContainer> col_second_column = table.columnGet(col_fullname_second);
+        ArrayList<MSQContainer> result_column = new ArrayList<>();
+        for (int i = 0; i < col_first_column.size(); i += 1 ) {
+            try {
+                String res = divide(col_first_column.get(i),col_second_column.get(i));
+                MSQContainer add_res = new MSQContainer(res);
+                result_column.add(add_res);
+            } catch (RuntimeException e) {
+                throw new RuntimeException("Bad element type doing divide operation");
+            }
+        }  return result_column;
+    }
+
+    public static String divide(MSQContainer c1, MSQContainer c2) {
+        MSQOperable o1 = c1.getContainedElement();
+        MSQOperable o2 = c2.getContainedElement();
+        if (o1 instanceof MSQNan || o2 instanceof MSQNan) {
+            return "NAN";
+        } else if (o1 instanceof MSQNovalue && o2 instanceof MSQNovalue) {
+            return "NOVALUE";
+        } else {
+            try {
+                MSQOperable res = o1.divide(o2);
+                return res.toString();
+            } catch (RuntimeException e) {
+                throw new RuntimeException("Bad element type doing divide operation");
             }
         }
     }

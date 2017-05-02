@@ -47,10 +47,12 @@ public class MSQInt extends MSQOperable {
     @Override
     public MSQOperable reverseMul () {
         if (Value == 0.0) {
-            return new MSQNan();
+            MSQNan res = new MSQNan();
+            res.setType("float");
+            return res;
         } else {
-            int res = 1 / Value;
-            return new MSQInt(Integer.toString(res));
+            float res = 1/Value;
+            return new MSQFloat(Float.toString(res));
         }
     }
 
@@ -93,28 +95,39 @@ public class MSQInt extends MSQOperable {
 
     @Override
     public MSQOperable mul (MSQOperable other) {
-        if (other.getOprValue().equals("float")) {
+        if (other instanceof MSQNan) {
+            return other.mul(this);
+        } else if (other.getType().equals("float")) {
             float res = Value * Float.parseFloat(other.getOprValue());
             return new MSQFloat(Float.toString(res));
-        } else if (other.getOprValue().equals("int")) {
+        } else if (other.getType().equals("int")) {
             int res = Value * Integer.parseInt(other.getOprValue());
-            return new MSQFloat(Integer.toString(res));
+            return new MSQInt(Integer.toString(res));
         } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }
     }
 
     public MSQOperable divide (MSQOperable other) {
-        if (other instanceof MSQNan) {
-            return other.divide(this);
+        if (other instanceof MSQNovalue) {
+            MSQNan res = new MSQNan();
+            res.setType(other.getType());
+            return res;
         } else if (other.getType().equals("float")) {
             // might be NAN or a reversed float
             MSQOperable flt_rvsd = other.reverseMul();
-            return flt_rvsd.mul(this);
+            return mul(flt_rvsd);
         } else if (other.getType().equals("int")) {
             // might be NAN or a reversed float
-            MSQOperable int_rvsd = other.reverseMul();
-            return int_rvsd.mul(this);
+            int op1 = Integer.parseInt(getOprValue());
+            int op2 = Integer.parseInt(other.getOprValue());
+            if (op2 == 0) {
+                MSQNan res = new MSQNan();
+                res.setType("int");
+                return res;
+            }
+            int res = op1/op2;
+            return new MSQInt(Integer.toString(res));
         } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }

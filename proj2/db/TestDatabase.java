@@ -30,16 +30,20 @@ public class TestDatabase {
         System.out.println(print_res);
     }
 
-    public void TestCreateSelectTable() {
-        Database db = new Database();
-        Parse.testLoadTable("test", db);
-    }
 
     @Test
     public void TestInsertRow() {
         Database db = new Database();
         Parse.testLoadTable("t1", db);
-        String s = Parse.TestInsertRow("t1 values ,2", db);
+        Parse.TestInsertRow("t1 values ,2", db);
+        System.out.println(Parse.testPrintTable("t1", db));
+        /*
+        x int,y int
+        2,5
+        8,3
+        13,7
+        NOVALUE,2
+        * */
     }
 
     @Test
@@ -55,6 +59,7 @@ public class TestDatabase {
         Parse.testLoadTable("t4", db);
         Parse.testLoadTable("fans", db);
         Parse.testLoadTable("teams", db);
+        Parse.testLoadTable("records", db);
         Parse.testLoadTable("test_Novalue_Nan2", db);
         /*      x int, y int, z int, d int, c int
          *      8,3,9,2,2
@@ -99,6 +104,38 @@ public class TestDatabase {
                 2012,'Cloud9 Los Angeles'
                 2007,'EnVyUs Charlotte'
                 1886,'Golden Bears Berkeley'
+        */
+
+        // select more than one column operation from one table
+        System.out.println(Parse.testSelect("City,Season,Wins/Losses as Ratio from teams,records", db));
+        /*      City string,Season int,Ratio int
+                'New York',2015,1
+                'New York',2014,0
+                'New York',2013,0
+                'Pittsburgh',2015,1
+                'Pittsburgh',2014,2
+                'Pittsburgh',2013,1
+                'New England',2015,3
+                'New England',2014,3
+                'New England',2013,3
+                'Berkeley',2016,0
+                'Berkeley',2015,1
+                'Berkeley',2014,0
+        */
+
+        System.out.println(Parse.testSelect("City,Season,Wins*Losses as Ratio from teams,records", db));
+         /*      'New York',2015,6480
+                'New York',2014,6557
+                'New York',2013,6512
+                'Pittsburgh',2015,60
+                'Pittsburgh',2014,55
+                'Pittsburgh',2013,64
+                'New England',2015,48
+                'New England',2014,48
+                'New England',2013,48
+                'Berkeley',2016,35
+                'Berkeley',2015,40
+                'Berkeley',2014,35
         */
 
         // select more than one column operation from more than one tables
@@ -146,7 +183,7 @@ public class TestDatabase {
          */
 
         System.out.println(Parse.testSelect("F,W from test_Novalue_Nan2 where F == 0", db));
-        /*   F float
+        /*   W int,F float
              8,NOVALUE
              10,NOVALUE
              NAN,0.000
@@ -162,6 +199,11 @@ public class TestDatabase {
         /*   x int,y int
              2,5
              13,7
+         * */
+
+        System.out.println(Parse.testSelect("* from t1 where y != 5 and x != 13", db));
+        /*   x int,y int
+             8,3
          * */
     }
 

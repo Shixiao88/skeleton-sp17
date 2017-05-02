@@ -73,6 +73,32 @@ public class MSQNovalue extends MSQOperable{
     }
 
     @Override
+    public MSQOperable mul (MSQOperable other) {
+        try {
+            if (Type.equals("float")) {
+                MSQFloat f = new MSQFloat("0.000");
+                return f.mul(other);
+            }
+            return other.mul(this);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("malformed operation, incorrect types");
+        }
+    }
+
+    @Override
+    public  MSQOperable divide(MSQOperable other) {
+        try {
+            if (other.getType().equals("float")) {
+                return new MSQFloat("0.000");
+            } else if (other.getType().equals("int")) {
+                return new MSQInt("0");
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("malformed operation, incorrect types");
+        } return null;
+    }
+
+    @Override
     public int compare (MSQOperable other) {
         try {
             if (other instanceof MSQNovalue) {

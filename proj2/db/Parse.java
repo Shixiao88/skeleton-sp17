@@ -129,7 +129,6 @@ public class Parse {
         try {
             Table t = db.selectTableByName(name);
             t.saveTableToFile(name);
-            System.out.println("Successfully store the table " + name);
         } catch (RuntimeException e) {
             System.out.println("Error: " + e);
         }
@@ -140,7 +139,6 @@ public class Parse {
         try {
             db.selectTableByName(name);
             db.removeTableByName(name);
-            System.out.println("Successfully drop the table " + name);
         } catch (RuntimeException e) {
             System.out.println("Error: " + e);
         }
@@ -213,8 +211,8 @@ public class Parse {
          */
         // 1. deal with the clause after FROM, joint all the tables
         Table join_table = selectTableJoin(table_name, db);
-        // 2. deal with the column operations after SELECT, might be column names and column operations.
 
+        // 2. deal with the column operations after SELECT, might be column names and column operations.
         String[] arry_operations = slc_exprs.split(COMMA);
         selectDoOprs(arry_operations, join_table);
 
@@ -277,12 +275,42 @@ public class Parse {
                     if (rename == "") {
                         String column_full_name = table.getFullTitleNameByRealName(arry_operations[0]);
                         table.columnAdd(column_full_name, one_column);
+                    } else {
+                        String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
+                        table.columnAdd(rename + " " + new_column_type, one_column);
                     }
-                    String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
-                    table.columnAdd(rename + " " + new_column_type, one_column);
+                } else if (operation.contains("*")) {
+                    String[] arry_operations = operation.split("\\s*\\*\\s*");
+                    // need to differeciate the situation from select * to the multiplier *
+                    if (arry_operations.length > 1) {
+                        // to see if there is the "as" column rename clause
+                        String[] rename_column_expr = arry_operations[1].split(AS);
+                        String rename = rename_column_expr[1];
+                        ArrayList<MSQContainer> one_column = Operation.mul(arry_operations[0], rename_column_expr[0], table);
+                        if (rename == "") {
+                            String column_full_name = table.getFullTitleNameByRealName(arry_operations[0]);
+                            table.columnAdd(column_full_name, one_column);
+                        } else {
+                            String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
+                            table.columnAdd(rename + " " + new_column_type, one_column);
+                        }
+                    }
+                } else if (operation.contains("/")) {
+                    String[] arry_operations = operation.split("\\s*/\\s*");
+                    // to see if there is the "as" column rename clause
+                    String[] rename_column_expr = arry_operations[1].split(AS);
+                    String rename = rename_column_expr[1];
+                    ArrayList<MSQContainer> one_column = Operation.divide(arry_operations[0], rename_column_expr[0], table);
+                    if (rename == "") {
+                        String column_full_name = table.getFullTitleNameByRealName(arry_operations[0]);
+                        table.columnAdd(column_full_name, one_column);
+                    } else {
+                        String new_column_type = type_selection(arry_operations[0], rename_column_expr[0], table);
+                        table.columnAdd(rename + " " + new_column_type, one_column);
+                    }
                 }
             }
-        } catch (RuntimeException e){
+        }catch (RuntimeException e){
             throw new RuntimeException("Bad formed operation format: " + e);
         }
     }
@@ -322,7 +350,7 @@ public class Parse {
 
     private static void selectColumns(String[] slc_titles, Table table) {
         // the case select "*" from the given table(s)
-        if (slc_titles[0].equals("*")) {
+        if (slc_titles[0].equals("*") && slc_titles.length == 1) {
             // do nothing
         } else {
             // filter all the AS clause, add all the real column number in the list
@@ -399,6 +427,16 @@ public class Parse {
                     ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
                     for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
                         if (! (res.get(row_index) == 0)) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                } else if (conds[i].contains("!=")) {
+                    String[] cps = conds[i].split("\\s*!=\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
+                        if (res.get(row_index) == 0) {
                             table.rowDel(row_index);
                         }
                     }

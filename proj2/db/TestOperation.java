@@ -160,6 +160,151 @@ public class TestOperation {
     }
 
     @Test
+    public void TestMul() {
+        Table test = new Table("test_Novalue_Nan");
+        // test mul of two columns of int
+        ArrayList<MSQContainer> col_res1 = Operation.mul("W", "L", test);
+        assertEquals("35", col_res1.get(0).toString());
+        assertEquals("60", col_res1.get(3).toString());
+        assertEquals("6480", col_res1.get(6).toString());
+        assertEquals("48", col_res1.get(11).toString());
+
+        // test mul of one column of int and one int
+        ArrayList<MSQContainer> col_res2 = Operation.mul("W", "10", test);
+        assertEquals("50", col_res2.get(0).toString());
+        assertEquals("100", col_res2.get(3).toString());
+        assertEquals("900", col_res2.get(6).toString());
+        assertEquals("120", col_res2.get(11).toString());
+
+        // test mul of one column int and one column int NOVALUE
+        ArrayList<MSQContainer> col_res3 = Operation.mul("S", "SNO", test);
+        assertEquals("0", col_res3.get(0).toString());
+        assertEquals("0", col_res3.get(11).toString());
+
+        // test mul of one column int and one column float NOVALUE
+        ArrayList<MSQContainer> col_res4 = Operation.mul("W", "FNO", test);
+        assertEquals("0.000", col_res4.get(0).toString());
+        assertEquals("0.000", col_res4.get(11).toString());
+
+        // test mul of one column float and one column float NOVALUE
+        ArrayList<MSQContainer> col_res5 = Operation.mul("F", "FNO", test);
+        assertEquals("0.000", col_res5.get(0).toString());
+        assertEquals("0.000", col_res5.get(11).toString());
+
+        // test mul of one column float NOVALUE and one column float
+        ArrayList<MSQContainer> col_res12 = Operation.mul("FNO", "F", test);
+        assertEquals("0.000", col_res12.get(0).toString());
+        assertEquals("0.000", col_res12.get(11).toString());
+
+        // test mul of one column int and one column int NAN
+        ArrayList<MSQContainer> col_res6 = Operation.mul("S", "WNO", test);
+        assertEquals("NAN", col_res6.get(0).toString());
+        assertEquals("NAN", col_res6.get(11).toString());
+
+        // test mul of two columns of float
+        ArrayList<MSQContainer> col_res7 = Operation.mul("F", "F", test);
+        assertEquals("1.000", col_res7.get(0).toString());
+        assertEquals("9.000", col_res7.get(5).toString());
+
+        // test mul of one column of float and one int
+        ArrayList<MSQContainer> col_res8 = Operation.mul("F", "0.0", test);
+        assertEquals("0.000", col_res8.get(0).toString());
+        assertEquals("0.000", col_res8.get(5).toString());
+
+        // test mul of one column of float and one column of int
+        ArrayList<MSQContainer> col_res9 = Operation.mul("F", "W", test);
+        assertEquals("5.000", col_res9.get(0).toString());
+        assertEquals("0.000", col_res9.get(11).toString());
+
+        // test mul of two columns of NOVALUE
+        ArrayList<MSQContainer> col_res10 = Operation.mul("SNO", "FNO", test);
+        assertEquals("NOVALUE", col_res10.get(0).toString());
+        assertEquals("NOVALUE", col_res10.get(11).toString());
+
+        // test mul of one column of NOVALUE and one column of NAN
+        ArrayList<MSQContainer> col_res11 = Operation.mul("SNO", "WNO", test);
+        assertEquals("NAN", col_res11.get(0).toString());
+        assertEquals("NAN", col_res11.get(11).toString());
+
+        // test mul of one column of NOVALUe and
+    }
+
+    @Test
+    public void TestDivide() {
+
+        Table test = new Table("test_Novalue_Nan");
+        // test divide of two columns of int
+        ArrayList<MSQContainer> col_res = Operation.divide("W", "L", test);
+        assertEquals("0", col_res.get(0).toString());
+        assertEquals("1", col_res.get(3).toString());
+        assertEquals("1", col_res.get(6).toString());
+        assertEquals("3", col_res.get(11).toString());
+
+        // test divide of one column of int and one int
+        ArrayList<MSQContainer> col_res2 = Operation.divide("W", "2", test);
+        assertEquals("2", col_res2.get(0).toString());
+        assertEquals("5", col_res2.get(3).toString());
+        assertEquals("45", col_res2.get(6).toString());
+        assertEquals("6", col_res2.get(11).toString());
+
+        // test divide of one column int and one column int NOVALUE
+        ArrayList<MSQContainer> col_res3 = Operation.divide("S", "SNO", test);
+        assertEquals("NAN", col_res3.get(0).toString());
+        assertEquals("NAN", col_res3.get(11).toString());
+
+        // test divide of one column int NOVALUE and one column int
+        ArrayList<MSQContainer> col_res14 = Operation.divide("SNO", "S", test);
+        assertEquals("0", col_res14.get(0).toString());
+        assertEquals("0", col_res14.get(11).toString());
+
+        // test divide of one column int and one column float NOVALUE
+        ArrayList<MSQContainer> col_res4 = Operation.divide("W", "FNO", test);
+        assertEquals("NAN", col_res4.get(0).toString());
+        assertEquals("NAN", col_res4.get(11).toString());
+
+        // test divide of one column float and one column float NOVALUE
+        ArrayList<MSQContainer> col_res5 = Operation.divide("F", "FNO", test);
+        assertEquals("NAN", col_res5.get(0).toString());
+        assertEquals("NAN", col_res5.get(11).toString());
+
+        // test divide of one column float NOVALUE and one column float
+        ArrayList<MSQContainer> col_res12 = Operation.divide("FNO", "F", test);
+        assertEquals("0.000", col_res12.get(0).toString());
+        assertEquals("0.000", col_res12.get(11).toString());
+
+        // test divide of one column int and one column int NAN
+        ArrayList<MSQContainer> col_res6 = Operation.divide("S", "WNO", test);
+        assertEquals("NAN", col_res6.get(0).toString());
+        assertEquals("NAN", col_res6.get(11).toString());
+
+        // test divide of two columns of float
+        ArrayList<MSQContainer> col_res7 = Operation.divide("F", "F", test);
+        assertEquals("1.000", col_res7.get(0).toString());
+        assertEquals("1.000", col_res7.get(5).toString());
+
+        // test divide of one column of float and one int
+        ArrayList<MSQContainer> col_res8 = Operation.divide("F", "0.0", test);
+        assertEquals("NAN", col_res8.get(0).toString());
+        assertEquals("NAN", col_res8.get(5).toString());
+
+        // test divide of one column of int and one column of float
+        ArrayList<MSQContainer> col_res10 = Operation.divide("W", "F", test);
+        assertEquals("5.000", col_res10.get(0).toString());
+        assertEquals("NAN", col_res10.get(11).toString());
+
+        // test divide of one column of NOVALUE and one column of NAN
+        ArrayList<MSQContainer> col_res11 = Operation.divide("SNO", "WNO", test);
+        assertEquals("NAN", col_res11.get(0).toString());
+        assertEquals("NAN", col_res11.get(11).toString());
+
+        // test divide of two columns of NOVALUE
+        ArrayList<MSQContainer> col_res13 = Operation.divide("SNO", "FNO", test);
+        assertEquals("NOVALUE", col_res13.get(0).toString());
+        assertEquals("NOVALUE", col_res13.get(11).toString());
+
+    }
+
+    @Test
     public void TestComparison() {
         // test two string comparison
         Table test = new Table("test_Novalue_Nan");
@@ -191,14 +336,14 @@ public class TestOperation {
         assertTrue(col_res4.get(9) < 0);
 
 
-        // test NOVALUE int column compare toint
+        // test NOVALUE int column compare to int
         ArrayList<Integer> col_res5 = Operation.compare("SNO", "0", test);
         assertTrue(col_res5.get(0) == 0);
         assertTrue(col_res5.get(3) == 0);
         assertTrue(col_res5.get(6) == 0);
         assertTrue(col_res5.get(9) == 0);
 
-        // test NOVALUE int column compare toint
+        // test NOVALUE int column compare to int
         ArrayList<Integer> col_res6 = Operation.compare("WNO", "10000", test);
         assertTrue(col_res6.get(0) > 0);
         assertTrue(col_res6.get(3) > 0);
@@ -219,7 +364,6 @@ public class TestOperation {
         assertTrue(col_res8.get(6) == 0);
         assertTrue(col_res8.get(9) == 0);
     }
-
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -259,6 +403,46 @@ public class TestOperation {
         Operation.minus("T", "WNO", test);
         // error when sub different type anyway
         Operation.minus("TNO", "WNO", test);
+    }
+
+    @Test
+    public void TestExceptionCallMul() throws Exception {
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage("Bad element type doing multiple operation");
+
+        Table test = new Table("test_Novalue_Nan");
+        // error when mul two columns of string
+        Operation.mul("T", "T", test);
+        // error when mul one column of string and one string literal
+        Operation.mul("T", "'haloha'", test);
+        // error when string mul int
+        Operation.mul("T", "S", test);
+        // error when string mul int type NOVALUE
+        Operation.mul("T", "SNO", test);
+        // error when string mul int type NAN
+        Operation.mul("T", "WNO", test);
+        // error when mul different type anyway
+        Operation.mul("TNO", "WNO", test);
+    }
+
+    @Test
+    public void TestExceptionCallDivide() throws Exception {
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage("Bad element type doing divide operation");
+
+        Table test = new Table("test_Novalue_Nan");
+        // error when divide two columns of string
+        Operation.divide("T", "T", test);
+        // error when divide one column of string and one string literal
+        Operation.divide("T", "'haloha'", test);
+        // error when string divide int
+        Operation.divide("T", "S", test);
+        // error when string divide int type NOVALUE
+        Operation.divide("T", "SNO", test);
+        // error when string divide int type NAN
+        Operation.divide("T", "WNO", test);
+        // error when divide different type anyway
+        Operation.divide("TNO", "WNO", test);
     }
 
     @Test

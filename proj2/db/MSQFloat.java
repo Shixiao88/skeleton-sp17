@@ -94,10 +94,10 @@ public class MSQFloat extends MSQOperable {
     public MSQOperable mul (MSQOperable other) {
         if (other instanceof MSQNan) {
             return other.mul(this);
-        } else if (other.getOprValue().equals("float")) {
+        } else if (other.getType().equals("float")) {
             float res = Value * Float.parseFloat(other.getOprValue());
             return new MSQFloat(Float.toString(res));
-        } else if (other.getOprValue().equals("int")) {
+        } else if (other.getType().equals("int")) {
             float res = Value * Integer.parseInt(other.getOprValue());
             return new MSQFloat(Float.toString(res));
         } else {
@@ -106,16 +106,14 @@ public class MSQFloat extends MSQOperable {
     }
 
     public MSQOperable divide (MSQOperable other) {
-        if (other instanceof MSQNan) {
-            return other.divide(this);
-        } else if (other.getType().equals("float")) {
+        if (other instanceof MSQNovalue) {
+            MSQNan res = new MSQNan();
+            res.setType("float");
+            return res;
+        } else if (other.getType().equals("float") || (other.getType().equals("int"))) {
             // might be NAN or a reversed float
             MSQOperable flt_rvsd = other.reverseMul();
-            return flt_rvsd.mul(this);
-        } else if (other.getType().equals("int")) {
-            // might be NAN or a reversed float
-            MSQOperable int_rvsd = other.reverseMul();
-            return int_rvsd.mul(this);
+            return mul(flt_rvsd);
         } else {
             throw new RuntimeException("malformed operation, incorrect types");
         }
