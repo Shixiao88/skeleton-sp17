@@ -1,4 +1,5 @@
 package db;
+import java.lang.reflect.Array;
 import java.util.*;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -95,7 +96,7 @@ public class TestOperation {
     }
 
     @Test
-    public void TestMius() {
+    public void TestMinus() {
         // test sub of two columns of int
         Table test = new Table("test_Novalue_Nan");
         ArrayList<MSQContainer> col_res = Operation.minus("W", "L", test);
@@ -158,6 +159,66 @@ public class TestOperation {
 
     }
 
+    @Test
+    public void TestComparison() {
+        // test two string comparison
+        Table test = new Table("test_Novalue_Nan");
+        ArrayList<Integer> col_res1 = Operation.compare("T", "'Mets'", test);
+        assertTrue(col_res1.get(0) < 0);
+        assertTrue(col_res1.get(3) > 0);
+        assertTrue(col_res1.get(6) == 0);
+        assertTrue(col_res1.get(9) > 0);
+
+        // test two int comparison
+        ArrayList<Integer> col_res2 = Operation.compare("S", "2014",test);
+        assertTrue(col_res2.get(0) > 0);
+        assertTrue(col_res2.get(1) > 0);
+        assertTrue(col_res2.get(2) == 0);
+        assertTrue(col_res2.get(5) < 0);
+
+        // test int column compare to float
+        ArrayList<Integer> col_res3 = Operation.compare("S", "2014.0",test);
+        assertTrue(col_res3.get(0) > 0);
+        assertTrue(col_res3.get(1) > 0);
+        assertTrue(col_res3.get(2) == 0);
+        assertTrue(col_res3.get(5) < 0);
+
+        // test NOVALUE string column compare to string
+        ArrayList<Integer> col_res4 = Operation.compare("TNO", "'Mets'", test);
+        assertTrue(col_res4.get(0) < 0);
+        assertTrue(col_res4.get(3) < 0);
+        assertTrue(col_res4.get(6) < 0);
+        assertTrue(col_res4.get(9) < 0);
+
+
+        // test NOVALUE int column compare toint
+        ArrayList<Integer> col_res5 = Operation.compare("SNO", "0", test);
+        assertTrue(col_res5.get(0) == 0);
+        assertTrue(col_res5.get(3) == 0);
+        assertTrue(col_res5.get(6) == 0);
+        assertTrue(col_res5.get(9) == 0);
+
+        // test NOVALUE int column compare toint
+        ArrayList<Integer> col_res6 = Operation.compare("WNO", "10000", test);
+        assertTrue(col_res6.get(0) > 0);
+        assertTrue(col_res6.get(3) > 0);
+        assertTrue(col_res6.get(6) > 0);
+        assertTrue(col_res6.get(9) > 0);
+
+        // test NAN with NAN
+        ArrayList<Integer> col_res7 = Operation.compare("WNO", "NAN", test);
+        assertTrue(col_res7.get(0) == 0);
+        assertTrue(col_res7.get(3) == 0);
+        assertTrue(col_res7.get(6) == 0);
+        assertTrue(col_res7.get(9) == 0);
+
+        // test NOVALUE string with NOVALUE
+        ArrayList<Integer> col_res8 = Operation.compare("TNO", "NOVALUE", test);
+        assertTrue(col_res8.get(0) == 0);
+        assertTrue(col_res8.get(3) == 0);
+        assertTrue(col_res8.get(6) == 0);
+        assertTrue(col_res8.get(9) == 0);
+    }
 
 
     @Rule
@@ -199,6 +260,21 @@ public class TestOperation {
         // error when sub different type anyway
         Operation.minus("TNO", "WNO", test);
     }
+
+    @Test
+    public void TestExceptionCallCompare() throws Exception {
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage("Bad formed comparision form");
+        Table test = new Table("test_Novalue_Nan");
+        // error when compare string to int
+        Operation.compare("T", "200", test);
+        // error when compare int to string
+        Operation.compare("S", "'200'", test);
+        // error when compare NOVALUE string to int
+        Operation.compare("TNO", "0", test);
+
+    }
+
 
 
 }

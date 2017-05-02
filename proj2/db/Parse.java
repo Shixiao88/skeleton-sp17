@@ -69,7 +69,7 @@ public class Parse {
         } else if ((m = PRINT_CMD.matcher(query)).matches()) {
             return printTable(m.group(1), db);
         } else if ((m = SELECT_CMD.matcher(query)).matches()) {
-            return select(m.group(1), db);
+            return select(m.group(1), db).toString();
         } else {
             System.err.printf("Malformed query: %s\n", query);
         }
@@ -103,29 +103,17 @@ public class Parse {
         return "Susseccfully create the table name: " + name;
     }
 
-//    public static String TestCreateSelectedTable(String name, String exprs, String tables, String conds, Database db) {
-//        return createSelectedTable(name, exprs, tables, conds, db);
-//    }
-//    private static String createSelectedTable(String name, String exprs, String tables, String conds, Database db) {
-//        /* name is the table name
-//        *  exprs is comma split
-//        *  tables is comma split
-//        *  cons is and split
-//        *  */
-//
-//        if (conds == null) {
-//            Table t = selectNoCond(exprs, tables, db);
-//            db.addTableByName(name, t);
-//        }
-//
-//    return "";
-//    }
+    public static String TestCreateSelectedTable(String name, String exprs, String tables, String conds, Database db) {
+        return createSelectedTable(name, exprs, tables, conds, db);
+    }
 
     private static String createSelectedTable(String name, String exprs, String tables, String conds, Database db) {
-        System.out.printf("You are trying to create a table named %s by selecting these expressions:" +
-                " '%s' from the join of these tables: '%s', filtered by these conditions: '%s'\n", name, exprs, tables, conds);
+        Table res = selectHelper(exprs, tables, conds, db);
+        Table selected_table = res.copy(name);
+        db.addTableByName(name, selected_table);
         return "";
     }
+
 
     public static String testLoadTable(String name, Database db) {
         return loadTable(name, db);
@@ -200,19 +188,24 @@ public class Parse {
     }
 
     public static String testSelect(String expr, Database db) {
-        return select(expr, db);
+        return select(expr, db).toString();
     }
 
 
-    private static String select(String expr, Database db) {
+    private static Table select(String expr, Database db) {
         Matcher m = SELECT_CLS.matcher(expr);
         if (!m.matches()) {
             System.err.printf("Malformed select: %s\n", expr);
-            return "";
+            return null;
         }
         String slc_exprs = m.group(1);
         String table_name = m.group(2);
         String cond = m.group(3);
+
+        return selectHelper(slc_exprs, table_name, cond, db);
+    }
+
+    private static Table selectHelper(String slc_exprs, String table_name, String cond, Database db) {
 
         /* parse the slc_exprs
          * column expression will be: "(<oprand><oprator><operand>)(<oprand><oprator><operand>)(<oprand><oprator><operand>)
@@ -228,7 +221,13 @@ public class Parse {
         // 3. deal with only column name selection, delete all the columns that doesn't mentioned in the select clause
         selectColumns(arry_operations, join_table);
 
-        return join_table.toString();
+        // 4. if the cond is not null, filter the result from step3
+        if (! (cond == null)) {
+            String[] conds = cond.split(AND);
+            filterCond(conds, join_table);
+        }
+
+        return join_table;
     }
 
     /* first step : to create a joint table for clause "FROM TABLE1, TABLE2, TABLE3 ... */
@@ -346,13 +345,68 @@ public class Parse {
         }
     }
 
-    private static String selectCond(String exprs, String tables, String conds, Database db) {
-        String[] cons_lst = conds.split(AND);
-        int cond_len = cons_lst.length;
-        for (int i = 0; i < cond_len; i += 1) {
-            if (cons_lst[i].contains("+")) {
-                String[] operations = cons_lst[i].split("\\s*\\+\\s*");
+    private static void filterCond(String[] conds, Table table) {
+        try {
+            for (int i = 0; i < conds.length; i += 1) {
+                if (conds[i].contains("<=")) {
+                    String[] cps = conds[i].split("\\s*<=\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
+                        if (res.get(row_index) > 0) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                } else if (conds[i].contains("<")) {
+                    String[] cps = conds[i].split("\\s*<\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
+                        if (res.get(row_index) >= 0) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                } else if (conds[i].contains(">=")) {
+                    String[] cps = conds[i].split("\\s*>=\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    ArrayList<Integer> filtered_res = new ArrayList<>();
+
+                    // because the iteration and delete will have the list mutation exception, so i will iterate from
+                    // the end to the front, thus will not affect the table row index
+                    for (int row_index = res.size() - 1; row_index >= 0; row_index -= 1) {
+                        if (res.get(row_index) < 0) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                } else if (conds[i].contains(">")) {
+                    String[] cps = conds[i].split("\\s*>\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
+                        if (res.get(row_index) <= 0) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                } else if (conds[i].contains("==")) {
+                    String[] cps = conds[i].split("\\s*==\\s*");
+                    String cp1 = cps[0];
+                    String cp2 = cps[1];
+                    ArrayList<Integer> res = Operation.compare(cp1, cp2, table);
+                    for (int row_index = res.size()-1; row_index >= 0; row_index -= 1) {
+                        if (! (res.get(row_index) == 0)) {
+                            table.rowDel(row_index);
+                        }
+                    }
+                }
             }
-        } return "";
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Bad formed comparison form");
+        }
     }
+
 }

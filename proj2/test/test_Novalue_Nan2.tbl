@@ -1,0 +1,13 @@
+T string,S int,W int,L int,T int,F float
+'Golden Bears',2016,NOVALUE,7,0,1.0
+NOVALUE,2015,8,5,0,NOVALUE
+'Golden Bears',2014,5,7,0,3.0
+'Steelers',2015,10,6,0,NOVALUE
+NOVALUE,2014,11,5,0,2.0
+'Steelers',2013,8,8,0,3.0
+'Mets',2015,NOVALUE,72,0,1.0
+'Mets',2014,NAN,83,0,4.0
+'Mets',2013,74,88,0,NAN
+'Patriots',2015,12,4,0,NAN
+'Patriots',2014,12,4,0,2.0
+'Patriots',2013,NAN,4,0,0.0

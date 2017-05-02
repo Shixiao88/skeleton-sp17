@@ -30,6 +30,8 @@ public class MSQNan extends MSQOperable {
 
     @Override
     public MSQNan copy() {
+        MSQNan copy = new MSQNan();
+        copy.setType(Type);
         return new MSQNan();
     }
 
@@ -61,6 +63,14 @@ public class MSQNan extends MSQOperable {
     @Override
     public MSQOperable divide (MSQOperable other) {
         return new MSQNan();
+    }
+
+    @Override
+    public int compare (MSQOperable other) {
+        if (other instanceof MSQNan) {
+            return 0;
+        }
+        return 1;
     }
 
 }

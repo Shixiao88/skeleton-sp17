@@ -16,6 +16,7 @@ public class MSQContainer {
                                  _INT = Pattern.compile("[-]?\\d+"),
                                  _FLOAT = Pattern.compile("[-]?\\d*.\\d+|[-]?\\d+.\\d*"),
                                  _NOVALUE = Pattern.compile("\\s*|NOVALUE"),
+                                 _NOVALUESTR = Pattern.compile("^\\'\\s*\\'"),
                                  _NAN = Pattern.compile("NAN");
 
 
@@ -39,6 +40,9 @@ public class MSQContainer {
         } else if (_FLOAT.matcher(format).matches() && coltype.equals("float")) {
             contains_element = new MSQFloat(format);
         } else if (_NOVALUE.matcher(format).matches()) {
+            contains_element = new MSQNovalue();
+            contains_element.setType(coltype);
+        } else if (_NOVALUESTR.matcher(format).matches() && coltype.equals("string")) {
             contains_element = new MSQNovalue();
             contains_element.setType(coltype);
         } else if (_NAN.matcher(format).matches()) {
@@ -66,7 +70,10 @@ public class MSQContainer {
             contains_element = new MSQInt(format);
         } else if (_FLOAT.matcher(format).matches() ) {
             contains_element = new MSQFloat(format);
-        } else if (format_no_space.length() == 0 || format_no_space.equals("NOVALUE")) {
+        } else if (_NOVALUESTR.matcher(format).matches()) {
+            contains_element = new MSQNovalue();
+            contains_element.setType("string");
+        } else if (_NOVALUE.matcher(format).matches()) {
             contains_element = new MSQNovalue();
         } else if (format_no_space.equals("NAN")) {
             contains_element = new MSQNan();

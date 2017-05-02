@@ -93,9 +93,7 @@ public class MSQInt extends MSQOperable {
 
     @Override
     public MSQOperable mul (MSQOperable other) {
-        if (other instanceof MSQNan) {
-            return other.mul(this);
-        } else if (other.getOprValue().equals("float")) {
+        if (other.getOprValue().equals("float")) {
             float res = Value * Float.parseFloat(other.getOprValue());
             return new MSQFloat(Float.toString(res));
         } else if (other.getOprValue().equals("int")) {

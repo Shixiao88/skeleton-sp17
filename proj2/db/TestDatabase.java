@@ -55,6 +55,7 @@ public class TestDatabase {
         Parse.testLoadTable("t4", db);
         Parse.testLoadTable("fans", db);
         Parse.testLoadTable("teams", db);
+        Parse.testLoadTable("test_Novalue_Nan2", db);
         /*      x int, y int, z int, d int, c int
          *      8,3,9,2,2
          **/
@@ -103,8 +104,65 @@ public class TestDatabase {
         // select more than one column operation from more than one tables
         System.out.println(Parse.testSelect("YearEstablished, LastName + TeamName as LstTeamName from fans,teams", db));
 
+        System.out.println("\ntest the condition clause\n");
 
 
+        System.out.println(Parse.testSelect("* from t1,t2,t4 where x>10", db));
+        /*      x int, y int, z int, d int, c int
+         **/
+
+        System.out.println(Parse.testSelect("* from t1 where x<10 and y==3", db));
+        /*      x int, y int
+         *      8,3
+         **/
+
+        // select column operations from one table
+        System.out.println(Parse.testSelect("x+z as f from t2 where f==6", db));
+        /*      f int
+         *      6
+         **/
+
+        // select one column and one column operation from one table
+        System.out.println(Parse.testSelect("x,d+c as f from t4 where x == 0", db));
+        /*      x int,f int
+         *      0,16
+         **/
+
+        // select more than one column operation from one table
+        System.out.println(Parse.testSelect("YearEstablished,TeamName + City as f from teams where YearEstablished < 2000", db));
+        /*      YearEstablished int,f string
+                1962,'Mets New York'
+                1933,'Steelers Pittsburgh'
+                1960,'Patriots New England'
+                1886,'Golden Bears Berkeley'
+        */
+
+        // condition have NOVALUE and NAN
+        System.out.println(Parse.testSelect("T,W from test_Novalue_Nan2 where T < 'Patriots' and W > 10", db));
+        /*      T string,W int,T int
+         *      NOVALUE,11,0
+         *      'Mets',NAN,0
+         *      'Mets',74,0
+         */
+
+        System.out.println(Parse.testSelect("F,W from test_Novalue_Nan2 where F == 0", db));
+        /*   F float
+             8,NOVALUE
+             10,NOVALUE
+             NAN,0.000
+         * */
+
+        System.out.println(Parse.testSelect("T,W from test_Novalue_Nan2 where T == ''", db));
+        /*   T String,W int,T int
+             NOVALUE,8,0
+             NOVALUE,11,0
+         * */
+
+        System.out.println(Parse.testSelect("* from t1 where y >= 5 ", db));
+        /*   x int,y int
+             2,5
+             13,7
+         * */
     }
 
 }

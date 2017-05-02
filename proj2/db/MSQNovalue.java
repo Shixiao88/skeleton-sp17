@@ -14,8 +14,6 @@ public class MSQNovalue extends MSQOperable{
 
     private String Type;
 
-    MSQNovalue() {}
-
     @Override
     public void setType(String col_type){ Type = col_type; }
 
@@ -26,7 +24,9 @@ public class MSQNovalue extends MSQOperable{
 
     @Override
     public MSQNovalue copy() {
-        return new MSQNovalue();
+        MSQNovalue copy = new MSQNovalue();
+        copy.setType(Type);
+        return copy;
     }
 
     @Override
@@ -70,5 +70,24 @@ public class MSQNovalue extends MSQOperable{
         } catch (RuntimeException e) {
             throw new RuntimeException("malformed operation, incorrect types");
         }
+    }
+
+    @Override
+    public int compare (MSQOperable other) {
+        try {
+            if (other instanceof MSQNovalue) {
+                return 0;
+            } else if (other instanceof MSQNan) {
+                return -1;
+            } else if (other.getType().equals("string")) {
+                return this.getOprValue().compareTo(other.getOprValue());
+            } else if (other.getType().equals("int") || other.getType().equals("float")) {
+                Float this_value = Float.parseFloat(this.getOprValue());
+                Float other_value = Float.parseFloat(other.getOprValue());
+                return this_value.compareTo(other_value);
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Bad formed comparison expression.");
+        } return (Integer)null;
     }
 }
