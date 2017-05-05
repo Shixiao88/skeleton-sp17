@@ -11,25 +11,21 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private Node root;
 
     private class Node {
-        private K key;
-        private V value;
+        private K Key;
+        private V Value;
         private int size;
         private Node left;
         private Node right;
 
         public Node(K k, V v, int s) {
-            key = k;
-            value = v;
+            Key = k;
+            Value = v;
             size = s;
         }
 
     }
 
     public BSTMap() {}
-
-    public BSTMap(K key, V value) {
-        root = new Node(key, value, 1);
-    }
 
     /** Removes all of the mappings from this map. */
     @Override
@@ -54,10 +50,10 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private V get(Node node, K key) {
         if (node == null) {return null;}
         if (key == null) {throw new RuntimeException("key nust be a meaningfull unit");}
-        int cmp = key.compareTo(node.key);
+        int cmp = key.compareTo(node.Key);
         if (cmp < 0) {return get(node.left, key); }
         else if (cmp > 0) {return get(node.right, key); }
-        else { return node.value; }
+        else { return node.Value; }
     }
 
     /* Returns the number of key-value mappings in this map. */
@@ -83,10 +79,10 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     private Node put(Node node, K key, V value) {
         if (node == null) {return new Node(key, value, 1); }
-        int cmp = key.compareTo(node.key);
+        int cmp = key.compareTo(node.Key);
         if (cmp < 0) {node.left = put(node.left, key, value); }
         else if (cmp > 0) {node.right = put(node.right, key, value); }
-        else {node.value = value; }
+        else {node.Value = value; }
         node.size = size(node.left) + size(node.right) + 1;
         return node;
     }
@@ -98,36 +94,17 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private void printInOrder(Node node) {
         if (node == null) { return; }
         if (node.left == null) {
-            System.out.println(node.key + ":" +  node.value);
+            System.out.println(node.Key + ":" +  node.Value);
             printInOrder(node.right);
         }
         if (node.right == null) {
             printInOrder(node.left);
-            System.out.println(node.key + ":" +  node.value);
+            System.out.println(node.Key + ":" +  node.Value);
         }
         printInOrder(node.left);
-        System.out.println(node.key + ":" +  node.value);
+        System.out.println(node.Key + ":" +  node.Value);
         printInOrder(node.right);
     }
-
-
-//
-//    private void delete(K key) {
-//        if (key == null) {return; }
-//        root = delete(root, key);
-//    }
-//
-//    private Node delete(Node node, K key) {
-//        if (node == null) { return null; }
-//        int cmp = node.key.compareTo(key);
-//        if (cmp < 0) {node.left = delete(node.left, key); }
-//        if (cmp > 0) {node.right = delete(node.right, key); }
-//        if (cmp == 0) {
-//            if (node.right == null) { return node.left; }
-//            if (node.left == null) { return node.right; }
-//
-//        }
-//}
 
 
     /* Returns a Set view of the keys contained in this map. */
@@ -139,7 +116,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     private Set<K> keySet(Node node, Set set_to_add) {
         if (node == null) { return set_to_add; }
-        set_to_add.add(node.key);
+        set_to_add.add(node.Key);
         set_to_add = (keySet(node.right, set_to_add));
         set_to_add = keySet(node.left, set_to_add);
         return set_to_add;
@@ -204,7 +181,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
         @Override
         public K next() {
-            return findNextLarge(ptr.key);
+            return findNextLarge(ptr.Key);
         }
     }
 
@@ -218,7 +195,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         } else if (key == null) {
             throw new RuntimeException("must enter a valid key");
         }
-        int cmp = key.compareTo(node.key);
+        int cmp = key.compareTo(node.Key);
         if (cmp < 0) {
             return findNextLarge(node.left, key);
         } else if (cmp > 0) {
@@ -227,7 +204,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             if (node.right == null) {
                 return null;
             } else {
-                return node.right.key;
+                return node.right.Key;
             }
         }
     }

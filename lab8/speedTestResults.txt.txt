@@ -1,0 +1,10 @@
+RandomTest
+NAME,10Times,100Times,1000Times,10000Times,30000Times,
+ULLMap,0.00,0.01,0.02,1.76,17.96
+BSTMap,0.00,0.01,0.04,7.54,74.23
+TreeMap,0.00,0.01,0.00,0.04,0.13
+InOrderTest
+NAME,10Times,100Times,1000Times,10000Times
+ULLMap,0.01,0.01,0.06,3.58
+BSTMap,0.00,0.02,4.63,dead
+TreeMap,0.00,0.02,0.01,
