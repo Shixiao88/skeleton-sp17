@@ -7,7 +7,10 @@ public class WordPuzzleSolver {
      * your basic functionality. Make sure to set your current working directory
      * to be the one containing words10000.txt.
      **********************************************************************/
+<<<<<<< HEAD
+=======
 
+>>>>>>> 146b60508a9bf7076cc162bd3dc9f700c13493d0
     public static void main(String[] args) {
         String start = "horse";
         String goal = "nurse";

@@ -3,8 +3,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TestBoard {
+<<<<<<< HEAD
+    /*@Test
+=======
     /*
     @Test
+>>>>>>> 146b60508a9bf7076cc162bd3dc9f700c13493d0
     public void verifyImmutability() {
         int r = 2;
         int c = 2;
