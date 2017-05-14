@@ -3,12 +3,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TestBoard {
-<<<<<<< HEAD
-    /*@Test
-=======
-    /*
+
     @Test
->>>>>>> 146b60508a9bf7076cc162bd3dc9f700c13493d0
     public void verifyImmutability() {
         int r = 2;
         int c = 2;
@@ -28,5 +24,5 @@ public class TestBoard {
 
         x[1][1] = 1000;
         assertEquals("Your Board class is mutable and you should be making a copy of the values in the passed tiles array. Please see the FAQ!", 3, b.tileAt(1, 1));
-    }*/
+    }
 } 
