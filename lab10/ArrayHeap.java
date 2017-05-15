@@ -104,10 +104,12 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        while (getNode(index).priority() < getNode(parentIndex(index)).priority()) {
-            swap(index, parentIndex(index));
-            index = parentIndex(index);
-        }
+        try {
+            while (getNode(index).priority() < getNode(parentIndex(index)).priority()) {
+                swap(index, parentIndex(index));
+                index = parentIndex(index);
+            }
+        } catch (NullPointerException e) {}
     }
 
     /**
@@ -117,11 +119,14 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        int smaller_index = min(leftIndex(index), rightIndex(index));
-        while (getNode(index).priority() > getNode(smaller_index).priority()) {
-            swap(index, smaller_index);
-            index = smaller_index;
-        }
+        try {
+            while ((getNode(index).priority() > getNode(leftIndex(index)).priority()) ||
+                    (getNode(index).priority() > getNode(rightIndex(index)).priority())) {
+                int min_index = min(leftIndex(index), rightIndex(index));
+                swap(index, min_index);
+                index = min_index;
+            }
+        } catch (NullPointerException e) { }
     }
 
     /**
@@ -136,7 +141,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         }
 
         Node item_node = new Node(item, priority);
-        int index = size;
+        int index = size + 1;
         contents[index] = item_node;
         size += 1;
         swim(index);
@@ -191,7 +196,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     public void changePriority(T item, double priority) {
         Node replaced = new Node(item, priority);
         double original_pri;
-        for (int i = 1; i < size; i += 1) {
+        for (int i = 1; i < size+1; i += 1) {
             if (item.equals(contents[i])) {
                 original_pri = getNode(i).priority();
                 contents[i] = replaced;
