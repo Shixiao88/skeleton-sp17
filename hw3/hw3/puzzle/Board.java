@@ -7,15 +7,20 @@ public class Board implements WorldState {
     private int[][] board;
     private int[][] goal_tiles;
     private Board goal;
+    int n;
 
     public Board (int[][] tiles) {
-        int n = tiles.length;
+        n = tiles.length;
         board = new int[n][n];
         for (int i = 0; i < n; i += 1) {
             for (int j = 0; j < n; j += 1) {
                 board[i][j] = tiles[i][j];
             }
         }
+        createGoal();
+    }
+
+    private void createGoal() {
         goal_tiles = new int[n][n];
         for (int i = 0; i < n; i += 1) {
             for (int j = 0; j < n; j += 1) {
@@ -75,7 +80,6 @@ public class Board implements WorldState {
     }
 
     public int hamming() {
-        int n = size();
         int hamming_counter = 0;
         for (int i = 0; i < n; i += 1) {
             for (int j = 0; j < n - 1; j += 1) {
@@ -88,7 +92,6 @@ public class Board implements WorldState {
     }
 
     private int goalGetRowByTil(int til) {
-        int n = size();
         if (til == 0) {
             return n-1;
         } else {
@@ -97,7 +100,6 @@ public class Board implements WorldState {
     }
 
     private int goalGetColByTil(int til) {
-        int n = size();
         if (til == 0) {
             return n-1;
         } else {
@@ -106,7 +108,6 @@ public class Board implements WorldState {
     }
 
     public int manhattan() {
-        int n = size();
         int manhattan_counter = 0;
         for (int i = 0; i < n; i += 1) {
             for (int j = 0; j < n; j += 1) {

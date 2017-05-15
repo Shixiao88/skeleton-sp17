@@ -1,0 +1,4 @@
+Latitude int,Longitude int,Name string
+38,122,'Berkeley'
+42,71,'Cambridge'
+45,93,'Minneapolis'
