@@ -2,6 +2,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * LONGITUD = X, LATITUD = Y
+ */
+
+/**
  * This class provides all code necessary to take a query box and produce
  * a query result. The getMapRaster method must return a Map containing all
  * seven of the required fields, otherwise the front end code will probably
@@ -13,8 +17,10 @@ public class Rasterer {
 
     /** imgRoot is the name of the directory containing the images.
      *  You may not actually need this for your class. */
+    private MapQuadtree qt;
+
     public Rasterer(String imgRoot) {
-        // YOUR CODE HERE
+
     }
 
     /**
@@ -46,7 +52,7 @@ public class Rasterer {
      *                    string. <br>
      * "query_success" -> Boolean, whether the query was able to successfully complete. Don't
      *                    forget to set this to true! <br>
-     * @see #REQUIRED_RASTER_REQUEST_PARAMS
+     * @see //#REQUIRED_RASTER_REQUEST_PARAMS
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         // System.out.println(params);
@@ -54,6 +60,34 @@ public class Rasterer {
         System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
                            + "your browser.");
         return results;
+    }
+
+    private String[][] getDisplayMatrix() {
+        return null;
+    }
+
+    private double getRasterUlLon() {
+        return 0;
+    }
+
+    private double getRasterUlLat() {
+        return 0;
+    }
+
+    private double getRasterLrLon() {
+        return 0;
+    }
+
+    private double getRAsterLrLat() {
+        return 0;
+    }
+
+    private int getDepth() {
+        return 0;
+    }
+
+    private boolean isSuccess() {
+        return false;
     }
 
 }

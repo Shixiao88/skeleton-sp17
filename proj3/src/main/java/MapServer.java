@@ -62,6 +62,8 @@ public class MapServer {
     private static final String[] REQUIRED_RASTER_REQUEST_PARAMS = {"ullat", "ullon", "lrlat",
         "lrlon", "w", "h"};
     /**
+     *
+     *
      * Each route request to the server will have the following parameters
      * as keys in the params map.<br>
      * start_lat -> start point latitude,<br> start_lon -> start point longitude,<br>
