@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.io.File;
 
 /**
  * LONGITUD = X, LATITUD = Y
@@ -18,9 +19,17 @@ public class Rasterer {
     /** imgRoot is the name of the directory containing the images.
      *  You may not actually need this for your class. */
     private MapQuadtree qt;
+    public static final double TOLERANCE = 1.00;
 
     public Rasterer(String imgRoot) {
-
+        File root = new File(imgRoot);
+        String[] names = {null};
+        int i = 1;
+        for (final File file : root.listFiles()) {
+            names[i] = file.getName();
+            i += 1;
+        }
+        qt = new MapQuadtree(names);
     }
 
     /**
@@ -57,37 +66,10 @@ public class Rasterer {
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         // System.out.println(params);
         Map<String, Object> results = new HashMap<>();
+
         System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
                            + "your browser.");
         return results;
-    }
-
-    private String[][] getDisplayMatrix() {
-        return null;
-    }
-
-    private double getRasterUlLon() {
-        return 0;
-    }
-
-    private double getRasterUlLat() {
-        return 0;
-    }
-
-    private double getRasterLrLon() {
-        return 0;
-    }
-
-    private double getRAsterLrLat() {
-        return 0;
-    }
-
-    private int getDepth() {
-        return 0;
-    }
-
-    private boolean isSuccess() {
-        return false;
     }
 
 }
