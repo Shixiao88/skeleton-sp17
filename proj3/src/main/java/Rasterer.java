@@ -1,5 +1,4 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.io.File;
 
 /**
@@ -22,14 +21,24 @@ public class Rasterer {
     public static final double TOLERANCE = 1.00;
 
     public Rasterer(String imgRoot) {
-        File root = new File(imgRoot);
-        String[] names = {null};
+        String[] names = new String[30000];
         int i = 1;
-        for (final File file : root.listFiles()) {
+        for (final File file : sortByFileNameLen(imgRoot)) {
             names[i] = file.getName();
             i += 1;
         }
-        qt = new MapQuadtree(names);
+        qt = new MapQuadtree(names, i);
+    }
+
+    public static Iterable<File> sortByFileNameLen(String imgRoot) {
+        List<File> files = Arrays.asList(new File(imgRoot).listFiles());
+        Collections.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return Integer.compare(o1.getName().length(), o2.getName().length());
+            }
+        });
+        return files;
     }
 
     /**
@@ -64,11 +73,21 @@ public class Rasterer {
      * @see //#REQUIRED_RASTER_REQUEST_PARAMS
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        // System.out.println(params);
+        System.out.println(params);
         Map<String, Object> results = new HashMap<>();
 
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+//        results.put("raster_ul_lon",-122.2998046875);
+//        results.put("depth",2);
+//        results.put("raster_lr_lon",-122.2119140625);
+//        results.put("raster_lr_lat",37.82280243352756);
+//        String[][] s_res = {{"img/13.png", "img/14.png", "img/23.png", "img/24.png"}, {"img/31.png", "img/32.png", "img/41.png",
+//                "img/42.png"}, {"img/33.png", "img/34.png", "img/43.png", "img/44.png"}};
+//        results.put("render_grid", s_res);
+//        results.put("raster_ul_lat",37.87484726881516);
+//        results.put("query_success",true);
+
+//        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
+//                           + "your browser.");
         return results;
     }
 
