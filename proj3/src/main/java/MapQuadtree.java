@@ -1,6 +1,6 @@
 import java.lang.reflect.Array;
 import java.util.*;
-
+import java.util.regex.*;
 /**
  * Created by Xiao Shi on 2017/5/19.
  */
@@ -21,6 +21,7 @@ public class MapQuadtree {
      */
 
     private ArrayList<Tile> mqt;
+    private String imgRoot;
     private int size;
     private int depth;
 
@@ -108,8 +109,7 @@ public class MapQuadtree {
     }
 
 
-
-    public MapQuadtree(String[] img_source, int total_len) {
+    public MapQuadtree(String[] img_source, int total_len, String root) {
         /**
          * img_source, index 0 is null, index 1 is root
          * constructor: like the complete minPQ, the Tree can be a Node[]
@@ -117,45 +117,45 @@ public class MapQuadtree {
          * Index of parent of node with Index=k: if k>1 and (k+1)%4==0 or (k+2)%4==0 or (k-1)%4==0 or k%4==0:
          *                                      then parent k+1/k+2/k-1/k / 4
          */
-        size = img_source.length+1;
+        imgRoot = root;
+        size = img_source.length;
         mqt = new ArrayList<>();
-        mqt.add(null);
         // the special root case
-        mqt.add(new Tile("root", MapServer.ROOT_ULLON, MapServer.ROOT_ULLAT, MapServer.ROOT_LRLON, MapServer.ROOT_LRLAT,1));
+        mqt.add(new Tile(img_source[0], MapServer.ROOT_ULLON, MapServer.ROOT_ULLAT, MapServer.ROOT_LRLON, MapServer.ROOT_LRLAT,0));
         depth = 1;
 
         // the first four special tiles 1,2,3,4
-        mqt.add(new Tile(img_source[1], mqt.get(1).tileUlLon, mqt.get(1).tileUlLat,
-                (mqt.get(1).tileUlLon - mqt.get(1).tileLrLon)/2.0 + mqt.get(1).tileLrLon,
-                (mqt.get(1).tileUlLat - mqt.get(1).tileLrLat)/2.0 + mqt.get(1).tileLrLat,2));
-        mqt.add(new Tile(img_source[2], mqt.get(2).tileLrLon, mqt.get(2).tileUlLat,
-                        mqt.get(1).tileLrLon, mqt.get(2).tileLrLat,3));
-        mqt.add(new Tile(img_source[3], mqt.get(2).tileUlLon, mqt.get(2).tileLrLat, mqt.get(2).tileLrLon, mqt.get(1).tileLrLat,4));
-        mqt.add(new Tile(img_source[4], mqt.get(2).tileLrLon, mqt.get(2).tileLrLat, mqt.get(3).tileLrLon, mqt.get(4).tileLrLat,5));
+        mqt.add(new Tile(img_source[1], mqt.get(0).tileUlLon, mqt.get(0).tileUlLat,
+                (mqt.get(0).tileUlLon - mqt.get(0).tileLrLon)/2.0 + mqt.get(0).tileLrLon,
+                (mqt.get(0).tileUlLat - mqt.get(0).tileLrLat)/2.0 + mqt.get(0).tileLrLat,1));
+        mqt.add(new Tile(img_source[2], mqt.get(1).tileLrLon, mqt.get(1).tileUlLat,
+                        mqt.get(0).tileLrLon, mqt.get(1).tileLrLat,2));
+        mqt.add(new Tile(img_source[3], mqt.get(1).tileUlLon, mqt.get(1).tileLrLat, mqt.get(1).tileLrLon, mqt.get(0).tileLrLat,3));
+        mqt.add(new Tile(img_source[4], mqt.get(1).tileLrLon, mqt.get(1).tileLrLat, mqt.get(2).tileLrLon, mqt.get(3).tileLrLat,4));
         depth += 1;
 
-        if (total_len >= 6) {
+        if (total_len >= 5) {
         // start from tile 11, 12, ...
-        for (int i = 6; i <= total_len; i += 1) {
+        for (int i = 5; i < total_len; i += 1) {
             // Left Upper node, sample node : [2]
-            if (i % 4 == 2) {
-                int parent = (i + 2) / 4;
-                mqt.add(new Tile(img_source[i-1], MapServer.ROOT_ULLON, MapServer.ROOT_ULLAT,
+            if (i % 4 == 1) {
+                int parent = i / 4;
+                mqt.add(new Tile(img_source[i], mqt.get(parent).tileUlLon, mqt.get(parent).tileUlLat,
                         (mqt.get(parent).tileUlLon - mqt.get(parent).tileLrLon) / 2.0 + mqt.get(parent).tileLrLon,
                         (mqt.get(parent).tileUlLat - mqt.get(parent).tileLrLat) / 2.0 + mqt.get(parent).tileLrLat, i));
                 //  Right Upper node, sample node [3]
-            } else if (i % 4 == 3) {
-                int parent = (i + 1) / 4;
-                mqt.add(new Tile(img_source[i-1], mqt.get(i - 1).tileLrLon, mqt.get(i - 1).tileUlLat,
+            } else if (i % 4 == 2) {
+                int parent = i / 4;
+                mqt.add(new Tile(img_source[i], mqt.get(i - 1).tileLrLon, mqt.get(i - 1).tileUlLat,
                         mqt.get(parent).tileLrLon, mqt.get(i - 1).tileLrLat, i));
                 // Left Lower node, sample node [4]
-            } else if (i % 4 == 0) {
+            } else if (i % 4 == 3) {
                 int parent = i / 4;
-                mqt.add(new Tile(img_source[i-1], mqt.get(i - 2).tileUlLon, mqt.get(i - 2).tileLrLat, mqt.get(i - 2).tileLrLon,
+                mqt.add(new Tile(img_source[i], mqt.get(i - 2).tileUlLon, mqt.get(i - 2).tileLrLat, mqt.get(i - 2).tileLrLon,
                         mqt.get(parent).tileLrLat, i));
                 // Right Lower node, sample node [5]
-            } else if (i % 4 == 1) {
-                mqt.add(new Tile(img_source[i-1], mqt.get(i - 3).tileLrLon, mqt.get(i - 3).tileLrLat, mqt.get(i - 2).tileLrLon,
+            } else if (i % 4 == 0) {
+                mqt.add(new Tile(img_source[i], mqt.get(i - 3).tileLrLon, mqt.get(i - 3).tileLrLat, mqt.get(i - 2).tileLrLon,
                         mqt.get(i - 1).tileLrLat, i));
             }
         }
@@ -179,7 +179,7 @@ public class MapQuadtree {
         MapRaster.put("raster_ul_lat", raster_ul_lat);
 
         // to get the RasterLrLon
-        double raster_lr_lon = raster_tile_lst.get(raster_tile_lst.size()-1).tileUlLon;
+        double raster_lr_lon = raster_tile_lst.get(raster_tile_lst.size()-1).tileLrLon;
         MapRaster.put("raster_lr_lon", raster_lr_lon);
 
         // to get the RasterLrLat
@@ -187,34 +187,61 @@ public class MapQuadtree {
         MapRaster.put("raster_lr_lat", raster_lr_lat);
 
         // to get the depth
-        int depth = raster_tile_lst.get(0).tileName.length();
+
+        String purename = raster_tile_lst.get(0).tileName.replaceAll("\\D+","");
+        int depth = purename.length();
         MapRaster.put("depth", depth);
 
-        // to build the name matrix
-        int matrix_x_num = (int)clientWidth / MapServer.TILE_SIZE;
-        int matrix_y_num = (int)clientHeight / MapServer.TILE_SIZE;
+        // to build the name matrix, get ArrayList
+        ArrayList<ArrayList<String>> name_matrix = getMatrix(raster_tile_lst, raster_ul_lon,
+                raster_lr_lon, raster_ul_lat, raster_lr_lat, 0);
 
-        ArrayList<ArrayList<String>> name_matrix = new ArrayList<>();
-        for (Tile t : raster_tile_lst) {
-            if (t.tileUlLon == raster_ul_lon){
-                ArrayList<String> line = new ArrayList<>();
-                line.add(t.getTileName());
-                raster_tile_lst.remove(0);
-                addTail(line, raster_tile_lst, raster_lr_lon);
-                name_matrix.add(line);
+        // convert ArrayList to Array
+
+        String[][] m = new String[name_matrix.size()][name_matrix.get(0).size()];
+        for (int x=0; x < name_matrix.size(); x += 1 ) {
+            for (int y=0; y < name_matrix.get(0).size(); y += 1) {
+                m[x][y] = name_matrix.get(x).get(y);
             }
         }
 
+        MapRaster.put("render_grid", m);
 
+        MapRaster.put("query_success", true);
+
+        return MapRaster;
     }
 
-    private void addTail (ArrayList<String> line, ArrayList<Tile> rest, double rasterLrLon) {
-        for (Tile t : rest) {
-            if (t.tileLrLon <= rasterLrLon) {
-                line.add(t.getTileName());
-                rest.remove(0);
-            } else { return; }
+    private ArrayList<ArrayList<String>> getMatrix (ArrayList<Tile> raster_tile_lst, double raster_ul_lon,
+                                                    double raster_lr_lon, double raster_ul_lat, double raster_lr_lat, int index) {
+        ArrayList<ArrayList<String>> name_matrix = new ArrayList<>();
+        for (int i = index; i < raster_tile_lst.size(); i += 1) {
+            String debugger = raster_tile_lst.get(i).tileName;
+            double deb = raster_tile_lst.get(i).tileUlLon;
+            if (raster_tile_lst.get(i).tileUlLon == raster_ul_lon && raster_tile_lst.get(i).tileLrLat >= raster_lr_lat ){
+                ArrayList<String> line = addTail(raster_tile_lst, raster_ul_lon, raster_lr_lon, raster_ul_lat, i);
+                name_matrix.add(line);
+            }
         }
+        return name_matrix;
+    }
+
+    private ArrayList<String> addTail (ArrayList<Tile> raster_tile_lst, double raster_ul_lon,
+                                       double raster_lr_lon, double raster_ul_lat, int index) {
+        ArrayList<String> line = new ArrayList<>();
+        line.add(imgRoot + raster_tile_lst.get(index).getTileName());
+        for (int i = index + 1; i < raster_tile_lst.size(); i +=1 ) {
+            String debugger = raster_tile_lst.get(i).tileName;
+            double deg = raster_tile_lst.get(i).tileLrLat;
+            if (raster_tile_lst.get(i).tileUlLat == raster_tile_lst.get(index).tileUlLat) {
+                if (raster_tile_lst.get(i).tileLrLon == raster_lr_lon) {
+                    line.add(imgRoot + raster_tile_lst.get(i).getTileName());
+                    return line;
+                } else {
+                    line.add(imgRoot + raster_tile_lst.get(i).getTileName());
+                }
+            }
+        } throw new RuntimeException("Error doing addTail function");
     }
 
     public ArrayList<Tile> testRasterList(double clientUlLon, double clientUlLat, double clientLrLon, double clientLrLat,
@@ -224,11 +251,9 @@ public class MapQuadtree {
     }
 
     private ArrayList<Tile> rasterList(Tile clientTile) {
-        Tile ptr = mqt.get(1);
-        System.out.print(ptr.tileName);
+        Tile ptr = mqt.get(0);
         Tile ul_tile = getUlTile(clientTile, ptr);
         Tile lr_tile = getLrTile(clientTile, ptr);
-        int len = lr_tile.tileIndex-ul_tile.tileIndex;
         ArrayList<Tile> rater_fit_lst = new ArrayList<>();
         rater_fit_lst.addAll(mqt.subList(ul_tile.tileIndex, lr_tile.tileIndex + 1));
         return rater_fit_lst;
@@ -236,10 +261,12 @@ public class MapQuadtree {
 
     private Tile getUlTile(Tile client, Tile mqtTile) {
         if (isEqualLonDPP(client, mqtTile)) {
-            System.out.print(mqtTile.tileName);
+//            String name = mqtTile.tileName;
             return mqtTile;
         } else {
             if (!isLeaf(mqtTile)) {
+//              String name1 = mqtTile.tileName;
+                int i = mqtTile.tileIndex;
                 return getUlTile(client, branches(mqtTile));
             } else {
                 return mqtTile;
@@ -249,7 +276,8 @@ public class MapQuadtree {
 
     private Tile getUlTile(Tile client, Iterable<Tile> branches) {
         for (Tile child : branches) {
-            String name = child.tileName;
+//            String name = child.tileName;
+//            int i = child.tileIndex;
             if (child.isIn(true, client)) {
                 return getUlTile(client, child);
             }
@@ -270,7 +298,7 @@ public class MapQuadtree {
 
     private Tile getLrTile(Tile client, Iterable<Tile> branches) {
         for (Tile child : branches) {
-            String name = child.tileName;
+            //String name = child.tileName;
             if (child.isIn(false, client)) {
                 return getLrTile(client, child);
             }
@@ -278,8 +306,8 @@ public class MapQuadtree {
     }
 
     private boolean isEqualLonDPP(Tile client, Tile t) {
-        double a = getLonDPP(t);
-        double b = getLonDPP(client);
+//        double a = getLonDPP(t);
+//        double b = getLonDPP(client);
         return getLonDPP(t)/getLonDPP(client) <= Rasterer.TOLERANCE;
     }
 
@@ -298,17 +326,17 @@ public class MapQuadtree {
         int index = t.tileIndex;
         List<Tile> tileBranches = new LinkedList<>();
         if (!isLeaf(t)) {
-            for (int i = index * 4 - 2; i <= index * 4 + 1; i +=1)
+            for (int i = index * 4 + 1; i <= index * 4 + 4; i +=1)
             try {
                 tileBranches.add(mqt.get(i));
-            } catch (IndexOutOfBoundsException e) {break;}
+            } catch (IndexOutOfBoundsException e) { break;}
         }
         // could be Null!
         return tileBranches;
     }
 
     public void treeIter() {
-        treeIter(mqt.get(1));
+        treeIter(mqt.get(0));
     }
 
     private void treeIter(Tile t) {
