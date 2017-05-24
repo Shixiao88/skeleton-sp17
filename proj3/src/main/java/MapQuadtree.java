@@ -167,49 +167,60 @@ public class MapQuadtree {
     public Map<String, Object> raster(double clientUlLon, double clientUlLat, double clientLrLon, double clientLrLat,
                                       double clientWidth, double clientHeight) {
         Tile clientTile = new Tile("client", clientUlLon, clientUlLat, clientLrLon, clientLrLat, clientWidth);
-        ArrayList<Tile> raster_tile_lst = rasterList(clientTile);
+
         Map<String, Object> MapRaster = new HashMap<>();
 
-        // to get the RasterUlLon
-        double raster_ul_lon = raster_tile_lst.get(0).tileUlLon;
-        MapRaster.put("raster_ul_lon", raster_ul_lon);
+        try {
+            ArrayList<Tile> raster_tile_lst = rasterList(clientTile);
 
-        // to get the RasterUlLat
-        double raster_ul_lat = raster_tile_lst.get(0).tileUlLat;
-        MapRaster.put("raster_ul_lat", raster_ul_lat);
+            // to get the RasterUlLon
+            double raster_ul_lon = raster_tile_lst.get(0).tileUlLon;
+            MapRaster.put("raster_ul_lon", raster_ul_lon);
 
-        // to get the RasterLrLon
-        double raster_lr_lon = raster_tile_lst.get(raster_tile_lst.size()-1).tileLrLon;
-        MapRaster.put("raster_lr_lon", raster_lr_lon);
+            // to get the RasterUlLat
+            double raster_ul_lat = raster_tile_lst.get(0).tileUlLat;
+            MapRaster.put("raster_ul_lat", raster_ul_lat);
 
-        // to get the RasterLrLat
-        double raster_lr_lat = raster_tile_lst.get(raster_tile_lst.size()-1).tileLrLat;
-        MapRaster.put("raster_lr_lat", raster_lr_lat);
+            // to get the RasterLrLon
+            double raster_lr_lon = raster_tile_lst.get(raster_tile_lst.size() - 1).tileLrLon;
+            MapRaster.put("raster_lr_lon", raster_lr_lon);
 
-        // to get the depth
+            // to get the RasterLrLat
+            double raster_lr_lat = raster_tile_lst.get(raster_tile_lst.size() - 1).tileLrLat;
+            MapRaster.put("raster_lr_lat", raster_lr_lat);
 
-        String purename = raster_tile_lst.get(0).tileName.replaceAll("\\D+","");
-        int depth = purename.length();
-        MapRaster.put("depth", depth);
+            // to get the depth
 
-        // to build the name matrix, get ArrayList
-        ArrayList<ArrayList<String>> name_matrix = getMatrix(raster_tile_lst, raster_ul_lon,
-                raster_lr_lon, raster_ul_lat, raster_lr_lat, 0);
+            String purename = raster_tile_lst.get(0).tileName.replaceAll("\\D+", "");
+            int depth = purename.length();
+            MapRaster.put("depth", depth);
 
-        // convert ArrayList to Array
+            // to build the name matrix, get ArrayList
+            ArrayList<ArrayList<String>> name_matrix = getMatrix(raster_tile_lst, raster_ul_lon,
+                    raster_lr_lon, raster_ul_lat, raster_lr_lat, 0);
 
-        String[][] m = new String[name_matrix.size()][name_matrix.get(0).size()];
-        for (int x=0; x < name_matrix.size(); x += 1 ) {
-            for (int y=0; y < name_matrix.get(0).size(); y += 1) {
-                m[x][y] = name_matrix.get(x).get(y);
+            // convert ArrayList to Array
+
+            String[][] m = new String[name_matrix.size()][name_matrix.get(0).size()];
+            for (int x = 0; x < name_matrix.size(); x += 1) {
+                for (int y = 0; y < name_matrix.get(0).size(); y += 1) {
+                    m[x][y] = name_matrix.get(x).get(y);
+                }
             }
-        }
 
-        MapRaster.put("render_grid", m);
+            MapRaster.put("render_grid", m);
 
-        MapRaster.put("query_success", true);
+            MapRaster.put("query_success", true);
+
+            return MapRaster;
+
+         // if user input is wrong, or fail to get any raster_list, then return false of the QUERY_SUCCESS;
+        } catch (RuntimeException e) {
+        MapRaster.put("query_success", false);
 
         return MapRaster;
+    }
+
     }
 
     private ArrayList<ArrayList<String>> getMatrix (ArrayList<Tile> raster_tile_lst, double raster_ul_lon,
