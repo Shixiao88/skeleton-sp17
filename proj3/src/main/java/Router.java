@@ -26,6 +26,9 @@ public class Router {
         HashMap<Long, Double> distanceAccumMap = new HashMap<>();
         ArrayHeap<Long> hp = new ArrayHeap<>();
         hp.insert(start, 0);
+        for (Long adj : g.adjacent(start)) {
+            hp.insert(adj, g.distance(start, adj));
+        }
 
         while ( hp.size() != 0) {
             Long min = hp.removeMin();

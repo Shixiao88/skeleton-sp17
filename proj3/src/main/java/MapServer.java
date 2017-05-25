@@ -133,6 +133,10 @@ public class MapServer {
         get("/route", (req, res) -> {
             HashMap<String, Double> params =
                     getRequestParams(req, REQUIRED_ROUTE_REQUEST_PARAMS);
+            System.out.println("start_lon is: " + params.get("start_lon"));
+            System.out.println("start_lat is: " + params.get("start_lat"));
+            System.out.println("end_lon is: " + params.get("end_lon"));
+            System.out.println("end_lat is: " + params.get("end_lat"));
             route = Router.shortestPath(graph, params.get("start_lon"), params.get("start_lat"),
                     params.get("end_lon"), params.get("end_lat"));
             //route = findAndSetRoute(params);
@@ -222,9 +226,13 @@ public class MapServer {
 
         /* If there is a route, draw it. */
         double ullon = (double) rasteredImageParams.get("raster_ul_lon"); //tiles.get(0).ulp;
+        //System.out.println ("ullon is: " + ullon);
         double ullat = (double) rasteredImageParams.get("raster_ul_lat"); //tiles.get(0).ulp;
+        //System.out.println ("ullat is: " + ullat);
         double lrlon = (double) rasteredImageParams.get("raster_lr_lon"); //tiles.get(0).ulp;
+        //System.out.println ("lrlon is: " + lrlon);
         double lrlat = (double) rasteredImageParams.get("raster_lr_lat"); //tiles.get(0).ulp;
+        //System.out.println ("lrlat is: " + lrlat);
 
         final double wdpp = (lrlon - ullon) / img.getWidth();
         final double hdpp = (ullat - lrlat) / img.getHeight();

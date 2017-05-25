@@ -106,14 +106,10 @@ public class GraphDB {
 
 
     /** Longitude of vertex v. */
-    double lon(long v) {
-        return Double.parseDouble(nodes_lst.get(v).attr.getValue("lon"));
-    }
+    double lon(long v) { return nodes_lst.get(v).lon;}
 
     /** Latitude of vertex v. */
-    double lat(long v) {
-        return Double.parseDouble(nodes_lst.get(v).attr.getValue("lat"));
-    }
+    double lat(long v) { return nodes_lst.get(v).lon;}
 
     public void addNode(Attributes attr) {
         Node nd = new Node (attr);
@@ -131,12 +127,12 @@ public class GraphDB {
         }
     }
 
-    public void addEdge(Long one, Long other) {
+    public void addEdge(long one, long other) {
         nodes_lst.get(one).addAdjcent(other);
         nodes_lst.get(other).addAdjcent(one);
     }
 
-    public void delNode(Long id) {
+    public void delNode(long id) {
         try {
             nodes_lst.remove(id);
         } catch (IndexOutOfBoundsException e ) {
@@ -145,18 +141,23 @@ public class GraphDB {
     }
 
     class Node {
-        private Attributes attr;
         LinkedList<Long> adjacentsId;
         private String locationName;
+        long id;
+        double lon;
+        double lat;
 
         public Node (Attributes attributes) {
-            attr = attributes;
             nodes_lst.put(getId(), this);
             last_node = this;
+            adjacentsId = new LinkedList<>();
+            id = Long.parseLong(attributes.getValue("id"));
+            lon = Double.parseDouble(attributes.getValue("lon"));
+            lat = Double.parseDouble(attributes.getValue("lat"));
         }
 
-        public Long getId() {
-            return Long.parseLong(attr.getValue("id"));
+        public long getId() {
+            return id;
         }
 
         @Override
@@ -165,7 +166,7 @@ public class GraphDB {
             else if (this == that) {return true;}
             else if (! (that instanceof Node)) {return false; }
             else {
-                return attr.getValue("id").equals(((Node) that).attr.getValue("id"));
+                return id == ((Node) that).id;
             }
         }
 
@@ -181,14 +182,14 @@ public class GraphDB {
     class Way {
         private HashSet<Long> contained_nodeId_set;
         private boolean isValid = false;
-        Long last_nodeId;
-        private String way_name;
-        private Attributes attr;
+        long last_nodeId;
+        String way_name;
+        long id;
 
         public Way (Attributes attributes) {
-            attr = attributes;
             last_way = this;
             contained_nodeId_set = new HashSet<>();
+            id = Long.parseLong(attributes.getValue("id"));
         }
 
         public void addNodeToWay (Long id) {
@@ -196,7 +197,9 @@ public class GraphDB {
             last_nodeId = id;
         }
 
-        private Long getId() { return Long.parseLong(attr.getValue("id")); }
+        private long getId() {
+            return id;
+        }
 
         @Override
         public boolean equals (Object that) {
@@ -204,7 +207,7 @@ public class GraphDB {
             else if (this == that) {return true; }
             else if (! (that instanceof Way)) {return false;}
             else {
-                return attr.getValue("id").equals(((Way) that).attr.getValue("id"));
+                return id == ((Way) that).id;
             }
         }
 
@@ -213,7 +216,7 @@ public class GraphDB {
         void connect(HashSet<Long> nds) {
             List<Long> iterable_nds = new ArrayList<>();
             iterable_nds.addAll(nds);
-            for (Long id : iterable_nds) {
+            for (long id : iterable_nds) {
                 if (id != last_nodeId) {
                     addEdge(last_nodeId, id);
                 }

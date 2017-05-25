@@ -89,7 +89,8 @@ public class GraphBuildingHandler extends DefaultHandler {
             remember whether this way is valid or not. */
 
             GraphDB.Way way = g.last_way;
-            Long id = Long.parseLong(attributes.getValue("ref"));
+            long id = Long.parseLong(attributes.getValue("ref"));
+
             way.addNodeToWay(id);
 
         } else if (activeState.equals("way") && qName.equals("tag")) {
@@ -101,7 +102,7 @@ public class GraphBuildingHandler extends DefaultHandler {
 //                System.out.println("Max Speed: " + v);
                 /* TODO set the max speed of the "current way" here. */
             } else if (k.equals("highway")) {
-                System.out.println("Highway type: " + v);
+                //System.out.println("Highway type: " + v);
                 /* Figure out whether this way and its connections are valid. */
 
                 if (ALLOWED_HIGHWAY_TYPES.contains(v)) { way.setValid(); }
