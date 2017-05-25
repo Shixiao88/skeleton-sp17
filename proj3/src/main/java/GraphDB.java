@@ -1,3 +1,4 @@
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -5,7 +6,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -25,6 +26,13 @@ public class GraphDB {
      * You do not need to modify this constructor, but you're welcome to do so.
      * @param dbPath Path to the XML file to be parsed.
      */
+
+    private HashMap<Long, Node> nodes_lst = new HashMap<>();
+    private HashMap<Long, Way> ways_lst = new HashMap<>();
+    Node last_node;
+    Way last_way;
+
+
     public GraphDB(String dbPath) {
         try {
             File inputFile = new File(dbPath);
@@ -53,38 +61,169 @@ public class GraphDB {
      *  we can reasonably assume this since typically roads are connected.
      */
     private void clean() {
-        // TODO: Your code here.
+        for (Iterator<Map.Entry<Long, Node>> iterator = nodes_lst.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<Long, Node> entry = iterator.next();
+            if (entry.getValue().adjacentsId == null) {
+                iterator.remove();
+            }
+        }
     }
 
     /** Returns an iterable of all vertex IDs in the graph. */
     Iterable<Long> vertices() {
-        //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        return new ArrayList<>(nodes_lst.keySet());
     }
 
     /** Returns ids of all vertices adjacent to v. */
     Iterable<Long> adjacent(long v) {
-        return null;
+        return nodes_lst.get(v).adjacentsId;
     }
 
     /** Returns the Euclidean distance between vertices v and w, where Euclidean distance
-     *  is defined as sqrt( (lonV - lonV)^2 + (latV - latV)^2 ). */
+     *  is defined as sqrt( (lonV - lonW)^2 + (latV - latW)^2 ). */
     double distance(long v, long w) {
-        return 0;
+        return Math.sqrt(Math.pow((lon(v) - lon(w)),2) + Math.pow((lat(v) - lat(w)),2));
     }
 
     /** Returns the vertex id closest to the given longitude and latitude. */
     long closest(double lon, double lat) {
-        return 0;
+        Long smallest = new Long(0);
+        for (Map.Entry<Long, Node> entry : nodes_lst.entrySet()) {
+            if (smallest == null) {
+                smallest = entry.getKey();
+            } else {
+                if (distanceSqt(lon, lat, smallest) > distanceSqt(lon, lat, entry.getKey())) {
+                    smallest = entry.getKey();
+                }
+            }
+        }
+        return smallest;
     }
+
+    private double distanceSqt(double lon_x, double lat_x, Long id) {
+        return Math.pow((lon_x - lon(id)), 2) + Math.pow((lat_x - lat(id)), 2);
+    }
+
 
     /** Longitude of vertex v. */
     double lon(long v) {
-        return 0;
+        return Double.parseDouble(nodes_lst.get(v).attr.getValue("lon"));
     }
 
     /** Latitude of vertex v. */
     double lat(long v) {
-        return 0;
+        return Double.parseDouble(nodes_lst.get(v).attr.getValue("lat"));
     }
+
+    public void addNode(Attributes attr) {
+        Node nd = new Node (attr);
+        nodes_lst.put(nd.getId(), nd);
+    }
+
+    public void addWay(Attributes attr) {
+        Way way = new Way (attr);
+    }
+
+    public void addValidateWay (Way way) {
+        if (way.isValid) {
+            way.connect(way.contained_nodeId_set);
+            ways_lst.put(way.getId(), way);
+        }
+    }
+
+    public void addEdge(Long one, Long other) {
+        nodes_lst.get(one).addAdjcent(other);
+        nodes_lst.get(other).addAdjcent(one);
+    }
+
+    public void delNode(Long id) {
+        try {
+            nodes_lst.remove(id);
+        } catch (IndexOutOfBoundsException e ) {
+            System.out.println("Cannot find item you want to delete");
+        }
+    }
+
+    class Node {
+        private Attributes attr;
+        LinkedList<Long> adjacentsId;
+        private String locationName;
+
+        public Node (Attributes attributes) {
+            attr = attributes;
+            nodes_lst.put(getId(), this);
+            last_node = this;
+        }
+
+        public Long getId() {
+            return Long.parseLong(attr.getValue("id"));
+        }
+
+        @Override
+        public boolean equals(Object that) {
+            if (that == null){ return false; }
+            else if (this == that) {return true;}
+            else if (! (that instanceof Node)) {return false; }
+            else {
+                return attr.getValue("id").equals(((Node) that).attr.getValue("id"));
+            }
+        }
+
+        public void addAdjcent(Long other_node_id) {
+            adjacentsId.add(other_node_id);
+        }
+
+        public void addLocation (String name) {
+            locationName = name;
+        }
+    }
+
+    class Way {
+        private HashSet<Long> contained_nodeId_set;
+        private boolean isValid = false;
+        Long last_nodeId;
+        private String way_name;
+        private Attributes attr;
+
+        public Way (Attributes attributes) {
+            attr = attributes;
+            last_way = this;
+            contained_nodeId_set = new HashSet<>();
+        }
+
+        public void addNodeToWay (Long id) {
+            contained_nodeId_set.add(id);
+            last_nodeId = id;
+        }
+
+        private Long getId() { return Long.parseLong(attr.getValue("id")); }
+
+        @Override
+        public boolean equals (Object that) {
+            if (that == null) {return false;}
+            else if (this == that) {return true; }
+            else if (! (that instanceof Way)) {return false;}
+            else {
+                return attr.getValue("id").equals(((Way) that).attr.getValue("id"));
+            }
+        }
+
+        void setValid () { isValid = true;}
+
+        void connect(HashSet<Long> nds) {
+            List<Long> iterable_nds = new ArrayList<>();
+            iterable_nds.addAll(nds);
+            for (Long id : iterable_nds) {
+                if (id != last_nodeId) {
+                    addEdge(last_nodeId, id);
+                }
+            }
+        }
+
+        void setWayName (String name) { way_name = name; }
+
+    }
+
+
+
 }
