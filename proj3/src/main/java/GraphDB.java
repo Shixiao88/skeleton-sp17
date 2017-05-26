@@ -63,7 +63,7 @@ public class GraphDB {
     private void clean() {
         for (Iterator<Map.Entry<Long, Node>> iterator = nodes_lst.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<Long, Node> entry = iterator.next();
-            if (entry.getValue().adjacentsId == null) {
+            if (entry.getValue().adjacentsId.size() == 0) {
                 iterator.remove();
             }
         }
@@ -87,9 +87,9 @@ public class GraphDB {
 
     /** Returns the vertex id closest to the given longitude and latitude. */
     long closest(double lon, double lat) {
-        Long smallest = new Long(0);
+        long smallest = 0L;
         for (Map.Entry<Long, Node> entry : nodes_lst.entrySet()) {
-            if (smallest == null) {
+            if (smallest == 0L) {
                 smallest = entry.getKey();
             } else {
                 if (distanceSqt(lon, lat, smallest) > distanceSqt(lon, lat, entry.getKey())) {
@@ -101,6 +101,8 @@ public class GraphDB {
     }
 
     private double distanceSqt(double lon_x, double lat_x, Long id) {
+        double i = lon(id);
+        double j = lat(id);
         return Math.pow((lon_x - lon(id)), 2) + Math.pow((lat_x - lat(id)), 2);
     }
 
@@ -109,7 +111,7 @@ public class GraphDB {
     double lon(long v) { return nodes_lst.get(v).lon;}
 
     /** Latitude of vertex v. */
-    double lat(long v) { return nodes_lst.get(v).lon;}
+    double lat(long v) { return nodes_lst.get(v).lat;}
 
     public void addNode(Attributes attr) {
         Node nd = new Node (attr);
@@ -122,7 +124,7 @@ public class GraphDB {
 
     public void addValidateWay (Way way) {
         if (way.isValid) {
-            way.connect(way.contained_nodeId_set);
+            way.connect(way.contained_nodeId_lst);
             ways_lst.put(way.getId(), way);
         }
     }
@@ -140,6 +142,10 @@ public class GraphDB {
         }
     }
 
+    public boolean isInGraph(long id) {
+        return nodes_lst.containsKey(id);
+    }
+
     class Node {
         LinkedList<Long> adjacentsId;
         private String locationName;
@@ -148,7 +154,6 @@ public class GraphDB {
         double lat;
 
         public Node (Attributes attributes) {
-            nodes_lst.put(getId(), this);
             last_node = this;
             adjacentsId = new LinkedList<>();
             id = Long.parseLong(attributes.getValue("id"));
@@ -180,7 +185,7 @@ public class GraphDB {
     }
 
     class Way {
-        private HashSet<Long> contained_nodeId_set;
+        private LinkedList<Long> contained_nodeId_lst;
         private boolean isValid = false;
         long last_nodeId;
         String way_name;
@@ -188,12 +193,12 @@ public class GraphDB {
 
         public Way (Attributes attributes) {
             last_way = this;
-            contained_nodeId_set = new HashSet<>();
+            contained_nodeId_lst = new LinkedList<>();
             id = Long.parseLong(attributes.getValue("id"));
         }
 
         public void addNodeToWay (Long id) {
-            contained_nodeId_set.add(id);
+            contained_nodeId_lst.add(id);
             last_nodeId = id;
         }
 
@@ -213,20 +218,14 @@ public class GraphDB {
 
         void setValid () { isValid = true;}
 
-        void connect(HashSet<Long> nds) {
-            List<Long> iterable_nds = new ArrayList<>();
-            iterable_nds.addAll(nds);
-            for (long id : iterable_nds) {
-                if (id != last_nodeId) {
-                    addEdge(last_nodeId, id);
-                }
+        void connect(LinkedList<Long> nds) {
+            Long[] nds_array = nds.toArray(new Long[nds.size()]);
+            for (int index = 0; index < nds_array.length - 1; index += 1) {
+                addEdge(nds_array[index], nds_array[index + 1]);
             }
         }
 
         void setWayName (String name) { way_name = name; }
-
     }
-
-
 
 }

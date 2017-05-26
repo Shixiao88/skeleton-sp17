@@ -35,6 +35,7 @@ public class AGGraphBuildingTest {
                 numberOfNodes == 130462);
         assertFalse("Make sure you're clearing any temporary way objects when you find that"
                 + " your current way is invalid!", numberOfNodes == 123686);
+
         assertFalse("Make sure you're using endElement to clear out any temporary way objects, your"
                 + " graph likely includes nodes corresponding to buildings, though your bug may be"
                 + " something else entirely.", numberOfNodes > 40000 && numberOfNodes < 50000);
