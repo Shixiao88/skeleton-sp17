@@ -3,9 +3,11 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.plaf.basic.BasicScrollPaneUI;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -228,4 +230,45 @@ public class GraphDB {
         void setWayName (String name) { way_name = name; }
     }
 
+    /* the implemention of Trie, wait for future learning and back to complete */
+    private class Name {
+        private boolean isExisted;
+        private Map<Character, Name> child_lst;
+
+        public Name () {
+            isExisted = false;
+            child_lst = new HashMap<>();
+        }
+
+        private Name root = new Name();
+
+        public void put(String k) {
+            put(root, k, 0);
+        }
+
+        private Name put(Name n, String k, int d) {
+            if (n == null) {
+                n = new Name();
+            }
+            if (d == k.length()) {
+                n.isExisted = true;
+                return n;
+            }
+            char c = k.charAt(d);
+            n.child_lst.put(c, put(n, k, d-1));
+            return n;
+        }
+
+        public Iterable<String> findPrefix(String k) {
+            Queue<String> q = new ArrayDeque<>();
+            collect(root, "", k, q);
+            return q;
+        }
+
+        private void collect(Name n, String pre, String preffix, Queue<String> q) {
+            int d = pre.length();
+            if (n == null) { return; }
+            if (d == preffix.length() && )
+        }
+    }
 }

@@ -22,20 +22,24 @@ public class Router {
     static HashMap<Long, Double> distanceAccumMap = new HashMap<>();
     static DistanceComparator<Tile> cptr = new DistanceComparator<>();
     static PriorityQueue<Tile> hp = new PriorityQueue<>(4, cptr);
+    static long start;
+    static long dest;
 
     public static LinkedList<Long> shortestPath(GraphDB graph, double stlon, double stlat, double destlon, double destlat) {
         /* closest is O(V)*/
         g = graph;
-        long start = g.closest(stlon, stlat);
-        long dest = g.closest(destlon, destlat);
+        start = g.closest(stlon, stlat);
+        //System.out.println("start node id: " + start);
+        dest = g.closest(destlon, destlat);
+        //System.out.println("destination node id: " + dest);
 
         distanceAccumMap.put(start, 0.0);
         edgeTo.put(start, 0L);
-        hp.add(new Tile(start));
+        hp.add(new Tile(start, dest));
         for (Long adj : g.adjacent(start)) {
             edgeTo.put(adj, start);
             distanceAccumMap.put(adj, g.distance(start, adj));
-            hp.add(new Tile(adj));
+            hp.add(new Tile(adj, dest));
         }
 
         while ( hp.size() != 0) {
@@ -57,6 +61,7 @@ public class Router {
         LinkedList result = new LinkedList();
         while (paths.size() != 0) {
             result.add(paths.pop());
+            //System.out.println(paths.pop());
         }
         return result;
     }
@@ -66,24 +71,26 @@ public class Router {
             if (new_distance < distanceAccumMap.get(nd)){
                 edgeTo.put(nd, parent);
                 distanceAccumMap.put(nd, new_distance);
-                hp.remove(new Tile(nd));
-                hp.add(new Tile(nd));
+                hp.remove(new Tile(nd, dest));
+                hp.add(new Tile(nd, dest));
             }
         } else {
             distanceAccumMap.put(nd, new_distance);
             edgeTo.put(nd,parent);
-            hp.add(new Tile(nd));
+            hp.add(new Tile(nd, dest));
         }
     }
 
     static class Tile implements Comparable<Tile>{
         private long self_id;
+        private long dest;
 
-        Tile(long id) {
+        Tile(long id, long dest_id) {
             self_id = id;
+            this.dest = dest_id;
         }
 
-        double distance() { return distanceAccumMap.get(self_id);}
+        double distance() { return distanceAccumMap.get(self_id) + g.distance(self_id, dest);}
 
         long getID() { return self_id;}
 

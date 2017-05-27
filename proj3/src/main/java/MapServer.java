@@ -289,6 +289,7 @@ public class MapServer {
      * cleaned <code>prefix</code>.
      */
     public static List<String> getLocationsByPrefix(String prefix) {
+        String prefix_clean = graph.cleanString(prefix);
         return new LinkedList<>();
     }
 
