@@ -110,7 +110,7 @@ public class GraphBuildingHandler extends DefaultHandler {
                 /* Hint: Setting a "flag" is good enough! */
             } else if (k.equals("name")) {
 //                System.out.println("Way Name: " + v);
-                way.setWayName(v);
+                //g.setWayName(way, attributes.getValue("v"), way.getId());
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
@@ -123,7 +123,7 @@ public class GraphBuildingHandler extends DefaultHandler {
 //            System.out.println("Node's name: " + attributes.getValue("v"));
 
             GraphDB.Node nd = g.last_node;
-            nd.addLocation(attributes.getValue("v"));
+            g.setNodeName(nd, attributes.getValue("v"), nd.getId());
         }
     }
 

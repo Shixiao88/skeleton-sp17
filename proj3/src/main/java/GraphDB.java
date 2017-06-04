@@ -29,11 +29,14 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
 
-    private HashMap<Long, Node> nodes_lst = new HashMap<>();
-    private HashMap<Long, Way> ways_lst = new HashMap<>();
+    HashMap<Long, Node> nodes_lst = new HashMap<>();
+    HashMap<Long, Node> complets_nodes_lst = new HashMap<>();
+    HashMap<Long, Way> ways_lst = new HashMap<>();
     Node last_node;
     Way last_way;
-
+    /*the trie initiation*/
+    MapTrie mt = new MapTrie();
+    HashMap<Long, String> id_to_name = new HashMap<>();
 
     public GraphDB(String dbPath) {
         try {
@@ -110,14 +113,15 @@ public class GraphDB {
 
 
     /** Longitude of vertex v. */
-    double lon(long v) { return nodes_lst.get(v).lon;}
+    double lon(long v) { return complets_nodes_lst.get(v).lon;}
 
     /** Latitude of vertex v. */
-    double lat(long v) { return nodes_lst.get(v).lat;}
+    double lat(long v) { return complets_nodes_lst.get(v).lat;}
 
     public void addNode(Attributes attr) {
         Node nd = new Node (attr);
         nodes_lst.put(nd.getId(), nd);
+        complets_nodes_lst.put(nd.getId(), nd);
     }
 
     public void addWay(Attributes attr) {
@@ -136,21 +140,48 @@ public class GraphDB {
         nodes_lst.get(other).addAdjcent(one);
     }
 
-    public void delNode(long id) {
-        try {
-            nodes_lst.remove(id);
-        } catch (IndexOutOfBoundsException e ) {
-            System.out.println("Cannot find item you want to delete");
-        }
-    }
-
     public boolean isInGraph(long id) {
         return nodes_lst.containsKey(id);
     }
 
+
+    void setNodeName(Node nd, String k, Long id) {
+        String clean_k = cleanString(k).toLowerCase();
+        mt.put(clean_k, id);
+        id_to_name.put(id, k);
+    }
+
+    void setWayName(Way wy, String k, Long id) {
+        mt.put(k.toLowerCase(), id);
+        wy.setWayName(k);
+        //id_to_name.put(id, k);
+    }
+
+    ArrayList<String> getLocationsByPrefix (String pre) {
+        String clean_pre = cleanString(pre);
+        ArrayList<String> res = new ArrayList<>();
+        for (long id : mt.findPrefix(clean_pre)) {
+            res.add(id_to_name.get(id));
+        }
+        return res;
+    }
+
+    List<Map<String, Object>> getLocations (String name) {
+        List<Map<String, Object>> locations = new ArrayList<>();
+        String clean_name = cleanString(name);
+        for (long id : mt.get(clean_name)) {
+            Map<String, Object> each_param = new HashMap<>();
+            each_param.put("name", id_to_name.get(id));
+            each_param.put("lon", lon(id));
+            each_param.put("id", id);
+            each_param.put("lat", lat(id));
+            locations.add(each_param);
+        }
+        return locations;
+    }
+
     class Node {
         LinkedList<Long> adjacentsId;
-        private String locationName;
         long id;
         double lon;
         double lat;
@@ -181,9 +212,6 @@ public class GraphDB {
             adjacentsId.add(other_node_id);
         }
 
-        public void addLocation (String name) {
-            locationName = name;
-        }
     }
 
     class Way {
@@ -204,7 +232,7 @@ public class GraphDB {
             last_nodeId = id;
         }
 
-        private long getId() {
+        long getId() {
             return id;
         }
 
@@ -231,44 +259,81 @@ public class GraphDB {
     }
 
     /* the implemention of Trie, wait for future learning and back to complete */
-    private class Name {
-        private boolean isExisted;
-        private Map<Character, Name> child_lst;
+    class MapTrie {
+        private Name root;
 
-        public Name () {
-            isExisted = false;
-            child_lst = new HashMap<>();
+        public MapTrie() {
+            root = new Name();
         }
 
-        private Name root = new Name();
+        private class Name {
+            private ArrayList<Long> value;
+            private Map<Character, Name> child_lst;
 
-        public void put(String k) {
-            put(root, k, 0);
+            public Name() {
+                value = new ArrayList<>();
+                child_lst = new HashMap<>();
+            }
         }
 
-        private Name put(Name n, String k, int d) {
+        //private Name root = new Name();
+
+        void put(String k, long value) {
+            put(root, k, 0, value);
+        }
+
+        private Name put(Name n, String k, int d, long value) {
             if (n == null) {
                 n = new Name();
             }
             if (d == k.length()) {
-                n.isExisted = true;
+                n.value.add(value);
                 return n;
             }
             char c = k.charAt(d);
-            n.child_lst.put(c, put(n, k, d-1));
+            n.child_lst.put(c, put(n.child_lst.get(c), k, d + 1, value));
             return n;
         }
 
-        public Iterable<String> findPrefix(String k) {
-            Queue<String> q = new ArrayDeque<>();
-            collect(root, "", k, q);
+        public ArrayList<Long> get(String k) {
+            k = k.toLowerCase();
+            return get(root, k, 0).value;
+        }
+
+        private Name get(Name n, String s, int d) {
+            //Name res = new Name();
+            if (n == null) {
+                n = new Name();
+            }
+            if (d == s.length()) {
+                //res.add(n);
+                return n;
+            }
+            char c = s.charAt(d);
+            return get(n.child_lst.get(c),s, d + 1);
+            //return res;
+        }
+
+        public Iterable<Long> findPrefix(String k) {
+            Queue<Long> q = new ArrayDeque<>();
+            Name prefix_found = get(root, k, 0);
+            //List<Name> prefix_found_lst = get(root, k, 0);
+            //for (Name prefix_found : prefix_found_lst) {
+            collect(prefix_found, q);
+            //}
             return q;
         }
 
-        private void collect(Name n, String pre, String preffix, Queue<String> q) {
-            int d = pre.length();
-            if (n == null) { return; }
-            if (d == preffix.length() && )
+        private void collect(Name n, Queue<Long> q) {
+            if (n == null) {
+                return;
+            }
+            if (n.value.size() > 0) {
+                q.add(n.value.get(0));
+            }
+            for (Map.Entry<Character, Name> child : n.child_lst.entrySet()) {
+                collect(n.child_lst.get(child.getKey()), q);
+            }
         }
     }
 }

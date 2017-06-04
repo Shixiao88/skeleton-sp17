@@ -33,9 +33,9 @@ public class Router {
         dest = g.closest(destlon, destlat);
         //System.out.println("destination node id: " + dest);
 
+        setAllToInfinite_addAllIntoPQ(distanceAccumMap, hp, graph, dest);
         distanceAccumMap.put(start, 0.0);
         edgeTo.put(start, 0L);
-        hp.add(new Tile(start, dest));
         for (Long adj : g.adjacent(start)) {
             edgeTo.put(adj, start);
             distanceAccumMap.put(adj, g.distance(start, adj));
@@ -78,6 +78,13 @@ public class Router {
             distanceAccumMap.put(nd, new_distance);
             edgeTo.put(nd,parent);
             hp.add(new Tile(nd, dest));
+        }
+    }
+
+    private static void setAllToInfinite_addAllIntoPQ(HashMap<Long, Double> dist,PriorityQueue<Tile> hp, GraphDB graph, long dest) {
+        for ( Map.Entry<Long, GraphDB.Node> entry : graph.nodes_lst.entrySet() ) {
+            dist.put(entry.getKey(), Double.POSITIVE_INFINITY);
+            //hp.add(new Tile(entry.getKey(), dest));
         }
     }
 
