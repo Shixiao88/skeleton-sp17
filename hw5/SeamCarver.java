@@ -53,15 +53,19 @@ public class SeamCarver {
 
     /* sequence of indices for horizontal seam*/
     public   int[] findHorizontalSeam() {
-        int[] seam = new int[height()];
+//        int[] seam = new int[height()];
         int[] edgeTo = new int[height()];
-        MinPQ<Picture> minpq = new MinPQ<>();
-        for (int j = 0; j < height()-1; j += 1 ) {
-            double accumulated = 0;
-            for (int i = 0; i < width() - 1; i += 1) {
-                accumulated = accumulateEnergy(i, j, accumulated);
+//        MinPQ<Double> minpq = new MinPQ<>();
+        double[][] accumulateE = new double[width()][height()];
+        int minX = 0;
+        for (int i = 0; i < width() - 1; i += 1) {
+            accumulateE[i][0] = energy(i, 0);
+            for (int j = 1; j < height()-1; j += 1 ) {
+                accumulateE[i][j] = energy(i, j) + minEnergy(i, j, width() - 1, edgeTo);
             }
-
+            if (accumulateE[i][height()-1] < accumulateE[minX][height()-1]) {
+                minX = i;
+            }
         }
     }
 
@@ -69,12 +73,18 @@ public class SeamCarver {
         int[] adj = new int[3];
         if (change == 0) { adj[0] = max; adj[1] = change; adj[2] = change+1;}
         else if(change == max) { adj[0] = change - 1; adj[1] = change; adj[2] = 0;}
-        else { adj[0] = change - 1; adj[1] = change adj[2] = change+1; }
+        else { adj[0] = change - 1; adj[1] = change; adj[2] = change+1; }
         return adj;
     }
 
-    private double accumulateEnergy(int x, int y, double prev) {
-        return energy(x, y) + prev;
+    private double minEnergy(int x, int y, int max_x) {
+        if (x == 0) {
+            return Math.min(Math.min(energy(max_x, y - 1), energy(x, y - 1)), energy(x + 1, y - 1));
+        } else if (x == max_x) {
+            return Math.min(Math.min(energy(x - 1, y - 1), energy(x, y - 1)), energy(0, y - 1));
+        } else {
+            return Math.min(Math.min(energy(x - 1, y - 1), energy(x, y - 1)), energy(x + 1, y - 1));
+        }
     }
 
     private double nextMinEnergyEndTo(int x, int y, int prev_min) {
