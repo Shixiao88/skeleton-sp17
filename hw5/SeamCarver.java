@@ -3,7 +3,10 @@
  */
 import edu.princeton.cs.algs4.Picture;
 import java.awt.Color;
-import edu.princeton.cs.algs4.MinPQ;
+import java.util.Comparator;
+import java.util.Arrays;
+import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 
 public class SeamCarver {
     private Picture pic;
@@ -53,20 +56,27 @@ public class SeamCarver {
 
     /* sequence of indices for horizontal seam*/
     public   int[] findHorizontalSeam() {
-//        int[] seam = new int[height()];
-        int[] edgeTo = new int[height()];
-//        MinPQ<Double> minpq = new MinPQ<>();
-        double[][] accumulateE = new double[width()][height()];
+        Queue<Node> q = new Queue<>();
         int minX = 0;
         for (int i = 0; i < width() - 1; i += 1) {
-            accumulateE[i][0] = energy(i, 0);
+            Node nd = new Node(i, 0);
             for (int j = 1; j < height()-1; j += 1 ) {
-                accumulateE[i][j] = energy(i, j) + minEnergy(i, j, width() - 1, edgeTo);
+                Node min_adj = min(nd.adjacent());
+                nd = min_adj;
             }
-            if (accumulateE[i][height()-1] < accumulateE[minX][height()-1]) {
-                minX = i;
-            }
+            q.enqueue(nd);
         }
+        Node minaccu = minAccumulate(q);
+        Stack<Node> stk = new Stack<>();
+        while (minaccu.parent != null) {
+            stk.push(minaccu);
+            minaccu = minaccu.parent;
+        }
+        int[] horizontal = new int[height()];
+        for (int i = 0; i < horizontal.length; i += 1) {
+            horizontal[i] = stk.pop().x;
+        }
+        return horizontal;
     }
 
     private int[] adjcent(int change, int fix, int max) {
@@ -77,21 +87,73 @@ public class SeamCarver {
         return adj;
     }
 
-    private double minEnergy(int x, int y, int max_x) {
-        if (x == 0) {
-            return Math.min(Math.min(energy(max_x, y - 1), energy(x, y - 1)), energy(x + 1, y - 1));
-        } else if (x == max_x) {
-            return Math.min(Math.min(energy(x - 1, y - 1), energy(x, y - 1)), energy(0, y - 1));
-        } else {
-            return Math.min(Math.min(energy(x - 1, y - 1), energy(x, y - 1)), energy(x + 1, y - 1));
+    Node min(Node[] node_lst) {
+        Arrays.sort(node_lst);
+        return node_lst[node_lst.length-1];
+    }
+
+    Node minAccumulate(Queue<Node> q) {
+        Node nd = q.dequeue();
+        while (q.size() != 0) {
+            Node comparator = q.dequeue();
+            if (comparator.accumulate_energy < nd.accumulate_energy) {
+                nd = comparator;
+            }
         }
+        return nd;
     }
 
-    private double nextMinEnergyEndTo(int x, int y, int prev_min) {
-        return accumulateEnergy(x,y) + prev_min;
-    }
+    /* sequence of indices for vertical seam*/
+    public   int[] findVerticalSeam() {return new int[1];}
 
-    public   int[] findVerticalSeam()              // sequence of indices for vertical seam
-    public    void removeHorizontalSeam(int[] seam)   // remove horizontal seam from picture
-    public    void removeVerticalSeam(int[] seam)
+    /* remove horizontal seam from picture*/
+    public    void removeHorizontalSeam(int[] seam) {}
+
+    public    void removeVerticalSeam(int[] seam) {}
+
+    private class Node implements Comparable<Node>{
+        private int x;
+        private int y;
+        private double energy;
+        private double accumulate_energy;
+        private Node parent;
+
+        Node(int x, int y){
+            this.x = x;
+            this.y = y;
+            this.energy = energy(x, y);
+            this.accumulate_energy = this.energy;
+        }
+
+        Node (int x, int y, Node parent) {
+            this.x = x;
+            this.y = y;
+            this.energy = energy(x, y);
+            this.parent = parent;
+            this.accumulate_energy = parent.accumulate_energy + this.energy;
+        }
+
+        double getEnergy() {return this.energy;}
+
+        Node[] adjacent() {
+            Node[] res = new Node[3];
+            int[] res_x = adjcent(x, y, width()-1);
+            if (y == height() - 1) { return res;}
+            else {
+                Node n1 = new Node(res_x[0], y + 1, this);
+                Node n2 = new Node(res_x[1], y + 1, this);
+                Node n3 = new Node(res_x[2], y + 1, this);
+                res[0] = n1;
+                res[1] = n2;
+                res[2] = n3;
+                return res;
+            }
+        }
+
+        @Override
+        public int compareTo(Node other) {
+            return ((Double)getEnergy()).compareTo(other.getEnergy());
+        }
+
+    }
 }
