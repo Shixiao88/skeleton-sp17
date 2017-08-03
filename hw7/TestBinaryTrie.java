@@ -7,7 +7,7 @@ import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestBinaryTrie {
-/* Uncomment when you are ready. 
+
     @Test
     public void bestPrefixMatchWithExactMatches() {
         System.out.println("Testing that bestPrefixMatch works with exact matches.");
@@ -85,8 +85,9 @@ public class TestBinaryTrie {
         assertEquals(expected, yourTable);
     }
 
+
     public static void main(String[] args) {
         jh61b.junit.textui.runClasses(TestBinaryTrie.class);
     }    
-    */
+
 } 
